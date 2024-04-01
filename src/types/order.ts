@@ -1,0 +1,16 @@
+export enum OrderType {
+  PO = "PO",
+  SO = "SO",
+  CI = "CI",
+  IS = "IS",
+  FR = "FR",
+  SH = "SH",
+  AB = "AB",
+  AB_DN = "AB_DN",
+  e_VD = "e_VD",
+  EUR1 = "EUR1",
+  DMS = "DMS",
+  CDS_import = "CDS_import",
+  TRC2 = "TRC2",
+  FCI = "FCI",
+}
