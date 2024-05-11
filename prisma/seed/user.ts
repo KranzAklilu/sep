@@ -5,22 +5,22 @@ import { db } from "~/server/db";
 export async function userSeed() {
   const users = [
     {
-      email: "test1@gmail.com",
+      email: "admin@sep.com",
       password: await hash("12341234"),
-      role: UserRole.Admin,
+      role: UserRole.ADMIN,
     },
     {
-      email: "test2@gmail.com",
+      email: "ep@sep.com",
       password: await hash("12341234"),
       role: UserRole.EventPlanner,
     },
     {
-      email: "test2@gmail.com",
+      email: "vo@sep.com",
       password: await hash("12341234"),
       role: UserRole.VenueOwner,
     },
     {
-      email: "test2@gmail.com",
+      email: "at@sep.com",
       password: await hash("12341234"),
       role: UserRole.Attendee,
     },

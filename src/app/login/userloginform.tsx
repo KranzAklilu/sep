@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "~/components/ui/input";
-import { Button } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 
@@ -18,6 +18,7 @@ import {
 } from "~/components/ui/form";
 import { useState } from "react";
 import { useToast } from "~/components/ui/use-toast";
+import Link from "next/link";
 
 const schema = z.object({
   email: z.string().email(),
@@ -84,6 +85,7 @@ export default function UserLoginForm() {
                     </FormLabel>
                     <FormControl>
                       <Input
+                        type="email"
                         placeholder="name@example.com"
                         {...field}
                         disabled={isLoading}
@@ -118,13 +120,32 @@ export default function UserLoginForm() {
               />
               <div className="flex">
                 <div className="flex-grow" />
-                <Button size="sm" variant="link">
+                <Link
+                  href="/forgot-password"
+                  className={buttonVariants({ size: "sm", variant: "link" })}
+                >
                   Forgot password?
-                </Button>
+                </Link>
               </div>
-              <Button isLoading={isLoading} className="w-full" size="lg">
-                Sign in
-              </Button>
+              <div className="flex flex-col items-center gap-3">
+                <Button
+                  isLoading={isLoading}
+                  type="submit"
+                  className="w-full"
+                  size="lg"
+                >
+                  Sign in
+                </Button>
+
+                <span>---or---</span>
+
+                <Link
+                  href="/register"
+                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                >
+                  Create an account
+                </Link>
+              </div>
             </div>
           </div>
         </div>

@@ -23,6 +23,7 @@ declare module "next-auth" {
     user: {
       id: string;
       role: UserRole;
+      venueOwnerFinishedRegistration: boolean | null;
     } & DefaultSession["user"];
   }
 
@@ -46,6 +47,8 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email;
         session.user.image = token.picture;
         session.user.role = token.role as UserRole;
+        session.user.venueOwnerFinishedRegistration =
+          token.venueOwnerFinishedRegistration as boolean | null;
       }
 
       return session;
@@ -55,22 +58,35 @@ export const authOptions: NextAuthOptions = {
         where: {
           email: token.email,
         },
+        include: {
+          Venue: true,
+        },
       });
+
+      console.log({ dbUser });
 
       if (!dbUser) {
         if (user) {
-          token.id = user?.id;
+          token.id = user.id;
         }
         return token;
       }
-
       return {
         id: dbUser.id,
         name: dbUser.name,
         email: dbUser.email,
         role: dbUser.role,
         picture: dbUser.image,
-        hasPassword: !!dbUser.password,
+        venueOwnerFinishedRegistration: !dbUser.Venue
+          ? null
+          : !!dbUser.Venue?.name ||
+            !!dbUser.Venue?.location ||
+            !!dbUser.Venue?.pricePerHour ||
+            !!dbUser.Venue?.capacity ||
+            !!dbUser.Venue?.phone ||
+            !!dbUser.Venue?.openHour ||
+            !!dbUser.Venue?.closeHour ||
+            !!dbUser.Venue?.availableDate,
       };
     },
   },
@@ -101,10 +117,7 @@ export const authOptions: NextAuthOptions = {
             JSON.stringify({ message: "Invalid email or password" }),
           );
         }
-        const passwordMatch = await verify(
-          user.password || "",
-          credentials.password,
-        );
+        const passwordMatch = await verify(user.password, credentials.password);
         if (!passwordMatch) {
           throw new Error(
             JSON.stringify({ message: "Invalid email or password" }),

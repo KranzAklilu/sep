@@ -17,17 +17,81 @@ datasource db {
 model Event {
   id String @id @default(uuid())
 
-  name        String
-  description String
-  Tags        Tag[]
-  startTime   DateTime
-  endTime     DateTime
-  capacity    Int
-  Venue       Venue    @relation(fields: [venueId], references: [id])
+  name          String
+  description   String
+  Tags          Tag[]
+  date     DateTime
+  startTime     String
+  endTime       String
+  attendeeLimit Int
+  price         Int
+  featured      Boolean  @default(false)
+  acceptedByVenue Boolean @default(false)
+  rejectedByVenue Boolean @default(false)
+
+  vendorInstruction String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
-  venueId   String
+
+  EventSession  EventSession[]
+  EventAttendee EventAttendee[]
+  Feedback      Feedback[]
+  EventVendor   EventVendor[]
+  Owner         User?           @relation(fields: [ownerId], references: [id])
+  ownerId       String?
+  EventVenue    EventVenue[]
+  Venue         Venue?    @relation(fields: [venueId], references: [id])
+  venueId       String?
+}
+
+model EventSession {
+  id String @id @default(uuid())
+
+  name String
+  time DateTime
+
+  createdAt DateTime @default(now())
+  Event     Event?   @relation(fields: [eventId], references: [id])
+  eventId   String?
+}
+
+model Settings {
+  id String @id @default(uuid())
+
+  telebirrAccount String?
+  cbeAccount      String?
+  boaAccount      String?
+
+  createdAt DateTime @default(now())
+
+  User   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+}
+
+model Feedback {
+  id String @id @default(uuid())
+
+  rating  Int
+  comment String
+
+  Attendee   User?   @relation(fields: [attendeeId], references: [id])
+  attendeeId String?
+
+  event Event @relation(fields: [eventId], references: [id])
+
+  createdAt DateTime @default(now())
+  eventId   String
+}
+
+model Payment {
+  id String @id @default(uuid())
+
+  method String
+  amount Float
+  status String
+
+  createdAt DateTime @default(now())
 }
 
 model Tag {
@@ -43,13 +107,23 @@ model Tag {
 model Venue {
   id String @id @default(uuid())
 
-  name     String
-  location String
-  capacity Int
+  name          String
+  description   String
+  location      String
+  capacity      Int
+  phone         String
+  pricePerHour  Int
+  availableDate Int[]
+  openHour      String
+  closeHour     String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
   Event     Event[]
+
+  Owner      User         @relation(fields: [ownerId], references: [id])
+  ownerId    String       @unique
+  EventVenue EventVenue[]
 }
 
 // Necessary for Next auth
@@ -79,6 +153,42 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model EventVenue {
+  id String @id @default(cuid())
+
+  venue    Venue   @relation(fields: [venueId], references: [id])
+  event    Event   @relation(fields: [eventId], references: [id])
+  accepted Boolean @default(false)
+  rejected Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  venueId   String
+  eventId   String
+}
+
+model EventVendor {
+  id String @id @default(cuid())
+
+  user     User    @relation(fields: [userId], references: [id])
+  event    Event   @relation(fields: [eventId], references: [id])
+  accepted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  userId    String
+  eventId   String
+}
+
+model EventAttendee {
+  id String @id @default(cuid())
+
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+
+  createdAt DateTime @default(now())
+  userId    String
+  eventId   String
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -92,8 +202,14 @@ model User {
   Account       Account[]
   Session       Session[]
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime?       @updatedAt
+  Feedback      Feedback[]
+  EventOwner    Event[]
+  EventAttendee EventAttendee[]
+  Setting       Settings?
+  EventVendor   EventVendor[]
+  Venue         Venue?
 }
 
 model VerificationToken {

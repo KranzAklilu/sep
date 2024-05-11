@@ -1,3 +1,4 @@
+import { Session } from "next-auth";
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
@@ -17,12 +18,26 @@ export default withAuth(
       }
       return null;
     }
+
     // if user is authenticated but tries to go to authpages
     if (isAuthPage) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
-    if (!token.hasPassword) {
-      return NextResponse.redirect(new URL("/create-password", req.url));
+
+    const tokenWithUser = token as Session["user"];
+
+    console.log({ token });
+
+    if (tokenWithUser.role === "VenueOwner") {
+      if (!tokenWithUser.venueOwnerFinishedRegistration) {
+        return NextResponse.redirect(new URL("/finish-registration", req.url));
+      }
+      if (
+        tokenWithUser.venueOwnerFinishedRegistration &&
+        req.nextUrl.pathname.startsWith("/finish-registration")
+      ) {
+        return NextResponse.redirect(new URL("/dashboard/inquires", req.url));
+      }
     }
   },
 
@@ -37,6 +52,7 @@ export default withAuth(
     },
   },
 );
+
 export const config = {
   matcher: ["/", "/dashboard/:path*", "/login"],
 };

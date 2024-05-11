@@ -11,19 +11,7 @@ const links = [
     name: "Home",
     Icon: <BringToFrontIcon />,
     url: "/",
-    role: [UserRole.Admin, UserRole.Viewer],
-  },
-  {
-    name: "Document",
-    Icon: <BookTextIcon />,
-    url: "/documents",
-    role: [UserRole.Admin, UserRole.Viewer],
-  },
-  {
-    name: "Users",
-    Icon: <UserRoundIcon />,
-    url: "/users",
-    role: [UserRole.Admin],
+    role: [UserRole.ADMIN],
   },
 ];
 
@@ -33,7 +21,7 @@ export default function Nav({ session }: { session: Session }) {
   return (
     <nav className="grid items-start px-4 text-sm font-medium">
       {links
-        .filter((link) => link.role.includes(session.user.role))
+        // .filter((link) => link.role.includes(session.user.role))
         .map((link, idx) => (
           <Link
             key={idx}

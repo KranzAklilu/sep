@@ -1,4 +1,5 @@
 import { createEnv } from "@t3-oss/env-nextjs";
+
 import { z } from "zod";
 
 export const env = createEnv({
@@ -31,8 +32,6 @@ export const env = createEnv({
 
     EMAIL_SERVER: z.string().url(),
     EMAIL_FROM: z.string().email(),
-    SFTP_PASS_E: z.string(),
-    SFTP_USER: z.string(),
   },
 
   /**
@@ -55,8 +54,6 @@ export const env = createEnv({
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     EMAIL_SERVER: process.env.EMAIL_SERVER,
     EMAIL_FROM: process.env.EMAIL_FROM,
-    SFTP_USER: process.env.SFTP_USER,
-    SFTP_PASS_E: process.env.SFTP_PASS_E,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

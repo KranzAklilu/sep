@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { type AppRouter } from "~/server/api/root";
 import { getUrl, transformer } from "./shared";
+import { Toaster } from "~/components/ui/toaster";
 
 export const api = createTRPCReact<AppRouter>();
 
@@ -26,13 +27,14 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           url: getUrl(),
         }),
       ],
-    })
+    }),
   );
 
   return (
     <QueryClientProvider client={queryClient}>
       <api.Provider client={trpcClient} queryClient={queryClient}>
         {props.children}
+        <Toaster />
       </api.Provider>
     </QueryClientProvider>
   );
