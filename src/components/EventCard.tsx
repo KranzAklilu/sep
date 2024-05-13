@@ -7,7 +7,7 @@ import {
   CardFooter,
 } from "./ui/card";
 import { Badge } from "~/components/ui/badge";
-import { Event } from "@prisma/client";
+import { Event, Venue } from "@prisma/client";
 import { format } from "date-fns";
 import Link from "next/link";
 
@@ -15,7 +15,7 @@ const EventCard = ({
   event,
   remaining,
 }: {
-  event: Event;
+  event: Event & { Venue: Venue | null };
   remaining?: number;
 }) => {
   return (
@@ -34,14 +34,14 @@ const EventCard = ({
           {typeof remaining === "number" && (
             <p className="text-sm text-gray-400">{remaining} remaining</p>
           )}
-          <p className="text-gray-600">{event.location}</p>
+          <p className="text-gray-600">{event.Venue?.location}</p>
         </CardContent>
         <CardFooter className="flex items-center justify-between">
           <span className="text-sm text-gray-400">
-            {format(event.startTime, "yyyy-MM-dd")}
+            {format(event.date, "yyyy-MM-dd")}
           </span>
           <span className="text-sm text-gray-400">
-            {format(event.startTime, "hh:mm")}
+            {event.startTime} - {event.endTime}
           </span>
         </CardFooter>
       </Card>

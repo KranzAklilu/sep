@@ -18,6 +18,9 @@ const getEvent = async function (id: string) {
     where: {
       id,
     },
+    include: {
+      Venue: true,
+    },
   });
 };
 
@@ -55,16 +58,21 @@ const EventDetailPage = async ({ params }: { params: any }) => {
             </Dialog>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-600">{event.description}</p>
-            <p className="text-gray-600">ETB {event.price}</p>
-            <p className="text-gray-600">{event.location}</p>
+            <Badge className="mb-8">ETB {event.price}</Badge>
+            <h4>Descriptions</h4>
+            <div
+              className="text-gray-600"
+              dangerouslySetInnerHTML={{ __html: event.description }}
+            ></div>
+
+            <p className="text-gray-600">{event.Venue?.location}</p>
           </CardContent>
           <CardFooter className="flex items-center justify-between">
             <span className="text-sm text-gray-400">
-              {format(event.startTime, "yyyy-MM-dd")}
+              Date: {format(event.date, "yyyy-MM-dd")}
             </span>
             <span className="text-sm text-gray-400">
-              {format(event.startTime, "hh:mm")}
+              Start time: {event.startTime} - End time: {event.endTime}
             </span>
           </CardFooter>
         </Card>

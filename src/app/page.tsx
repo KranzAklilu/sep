@@ -14,7 +14,7 @@ const getEvents = async () => {
     include: {
       _count: {
         select: {
-          EventUser: true,
+          EventAttendee: true,
         },
       },
     },
@@ -82,7 +82,7 @@ export default async function LandingPage() {
           {upcommingEvents.map((event, idx) => (
             <EventCard
               event={event}
-              remaining={event.attendeeLimit - event._count.EventUser}
+              remaining={event.attendeeLimit - event._count.EventAttendee}
               key={idx}
             />
           ))}
