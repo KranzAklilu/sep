@@ -23,7 +23,7 @@ declare module "next-auth" {
     user: {
       id: string;
       role: UserRole;
-      venueOwnerFinishedRegistration: boolean | null;
+      finishedRegistration: boolean | null;
     } & DefaultSession["user"];
   }
 
@@ -47,8 +47,9 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email;
         session.user.image = token.picture;
         session.user.role = token.role as UserRole;
-        session.user.venueOwnerFinishedRegistration =
-          token.venueOwnerFinishedRegistration as boolean | null;
+        session.user.finishedRegistration = token.finishedRegistration as
+          | boolean
+          | null;
       }
 
       return session;
@@ -77,16 +78,20 @@ export const authOptions: NextAuthOptions = {
         email: dbUser.email,
         role: dbUser.role,
         picture: dbUser.image,
-        venueOwnerFinishedRegistration: !dbUser.Venue
+        finishedRegistration: !dbUser
           ? null
-          : !!dbUser.Venue?.name ||
-            !!dbUser.Venue?.location ||
-            !!dbUser.Venue?.pricePerHour ||
-            !!dbUser.Venue?.capacity ||
-            !!dbUser.Venue?.phone ||
-            !!dbUser.Venue?.openHour ||
-            !!dbUser.Venue?.closeHour ||
-            !!dbUser.Venue?.availableDate,
+          : dbUser.role === "VenueOwner"
+            ? !!dbUser.Venue?.name ||
+              !!dbUser.Venue?.location ||
+              !!dbUser.Venue?.pricePerHour ||
+              !!dbUser.Venue?.capacity ||
+              !!dbUser.Venue?.phone ||
+              !!dbUser.Venue?.openHour ||
+              !!dbUser.Venue?.closeHour ||
+              !!dbUser.Venue?.availableDate
+            : dbUser.role === "Attendee"
+              ? !!dbUser.name || !!dbUser.phone || !!dbUser.address
+              : true,
       };
     },
   },

@@ -1,5 +1,5 @@
 import { hash } from "argon2";
-import { userRegisterSchema } from "~/lib/validation/user";
+import { userRegisterSchema, userUpdateSchema } from "~/lib/validation/user";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -16,6 +16,7 @@ export const Users = createTRPCRouter({
     });
     return client;
   }),
+
   register: publicProcedure
     .input(userRegisterSchema)
     .mutation(async ({ ctx, input }) => {
@@ -26,6 +27,23 @@ export const Users = createTRPCRouter({
           password: await hash(password),
           role,
           email,
+        },
+      });
+    }),
+
+  update: publicProcedure
+    .input(userUpdateSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { name, address, phone } = input;
+      console.log(ctx.session);
+      return await ctx.db.user.update({
+        where: {
+          id: ctx.session?.user.id,
+        },
+        data: {
+          name,
+          address,
+          phone,
         },
       });
     }),

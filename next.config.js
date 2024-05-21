@@ -13,6 +13,11 @@ const config = {
     });
     return config;
   },
+  env: {
+    NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: "dp5vx9smc",
+    NEXT_PUBLIC_CLOUDINARY_PRESET_NAME: "knzk48be",
+  },
+  domains: ["res.cloudinary.com"],
 };
 
 export default config;

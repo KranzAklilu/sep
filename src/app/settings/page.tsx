@@ -15,16 +15,27 @@ import Feedback from "~/components/Feedback";
 import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
 import { db } from "~/server/db";
+import { Button } from "~/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Dashboard",
   description: "Example dashboard app built using the components.",
 };
 
+const getSettings = async (userId: string) => {
+  return await db.settings.findFirst({
+    where: {
+      userId,
+    },
+  });
+};
+
 export default async function DashboardPage({ params }: { params: any }) {
   const session = await getServerSession(authOptions);
 
   if (!session) return <>not logged in</>;
+
+  const settings = await getSettings(session.user.id);
 
   async function create() {
     "use server";
@@ -77,17 +88,21 @@ export default async function DashboardPage({ params }: { params: any }) {
         <form action={updateSetting} className="max-w-lg space-y-6 px-8 py-8">
           <div className="">
             <Label htmlFor="telebirr">Your telebirr account phone number</Label>
-            <Input id="telebirr" />
+            <Input
+              id="telebirr"
+              defaultValue={settings?.telebirrAccount || ""}
+            />
           </div>
           <div className="">
             <Label htmlFor="cbe">Your CBE account no.</Label>
-            <Input id="cbe" />
+            <Input id="cbe" defaultValue={settings?.cbeAccount || ""} />
           </div>
           <div className="">
             <Label htmlFor="cbe">Your BOA account no.</Label>
-            <Input id="boa" />
+            <Input id="boa" defaultValue={settings?.boaAccount || ""} />
           </div>
-        </div>
+          <Button type="submit">Save</Button>
+        </form>
       </Card>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Feedback />

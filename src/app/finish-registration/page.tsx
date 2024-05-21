@@ -3,6 +3,7 @@ import FinishVenueOwnerRegistrationForm from "./finish-venue-owner-registration-
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
 import { redirect } from "next/navigation";
+import FinishAttendeeRegistrationForm from "./finish-attendee-registration-form";
 
 const getVenue = async (userId: string) => {
   await db.venue.findUnique({
@@ -20,6 +21,11 @@ export default async function Page() {
   }
 
   return (
-    session.user.role === "VenueOwner" && <FinishVenueOwnerRegistrationForm />
+    <>
+      {session.user.role === "VenueOwner" && (
+        <FinishVenueOwnerRegistrationForm />
+      )}
+      {session.user.role === "Attendee" && <FinishAttendeeRegistrationForm />}
+    </>
   );
 }

@@ -1,7 +1,4 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
-import { Search } from "lucide-react";
-import Image from "next/image";
-import Logo from "~/components/logo";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -10,9 +7,7 @@ import {
   CardContent,
   CardDescription,
 } from "~/components/ui/card";
-import { UserNav } from "~/components/user-nav";
 import { CalendarDateRangePicker } from "~/views/dashboard/date-range-picker";
-import { MainNav } from "~/views/dashboard/main-nav";
 import { Overview } from "~/views/dashboard/overview";
 import { RecentSales } from "~/views/dashboard/recent-sales";
 import { getServerSession } from "next-auth";
@@ -20,10 +15,32 @@ import { authOptions } from "~/server/auth";
 import { MyEvents } from "~/views/dashboard/my-events";
 import { CreateEventDialog } from "~/components/create-event-dialog";
 import { db } from "~/server/db";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { CheckIcon, ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 const getVenues = async () => {
   return await db.venue.findMany({
     select: { id: true, name: true },
+  });
+};
+
+const getAttendees = async (userId: string) => {
+  return await db.eventAttendee.findMany({
+    where: {
+      event: {
+        ownerId: userId,
+      },
+    },
+    orderBy: {
+      approved: "asc",
+    },
+    include: {
+      user: true,
+      event: true,
+    },
+    take: 100,
   });
 };
 
@@ -33,6 +50,26 @@ export default async function EventPlannerDashboard() {
   if (!session) return <>not logged in</>;
 
   const venues = await getVenues();
+  const attendees = await getAttendees(session.user.id);
+
+  async function markAsPaid(formData: FormData) {
+    "use server";
+
+    const id = formData.get("id") as string;
+
+    console.log(id);
+    if (!id) return;
+
+    await db.eventAttendee.update({
+      where: {
+        id,
+      },
+      data: {
+        approved: true,
+      },
+    });
+    redirect("/dashboard");
+  }
 
   return (
     <>
@@ -169,11 +206,62 @@ export default async function EventPlannerDashboard() {
                   <CardHeader>
                     <CardTitle>Recent Attendee</CardTitle>
                     <CardDescription>
-                      You made 265 sales this month.
+                      Displayed the last 100 attendees
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <RecentSales />
+                    <div className="space-y-8">
+                      {attendees.map((attendee) => {
+                        return (
+                          <div className="flex items-center">
+                            <Avatar className="h-9 w-9">
+                              <AvatarImage src="/avatars/05.png" alt="Avatar" />
+                              <AvatarFallback>
+                                {attendee.user.name?.slice(0, 2)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="ml-4 space-y-1">
+                              <p className="text-sm font-medium capitalize leading-none">
+                                {attendee.user.name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {attendee.event.name} (+ETB
+                                {attendee.event.price})
+                              </p>
+                            </div>
+                            <div className="ml-auto flex items-center gap-4 font-medium">
+                              <Link
+                                href={attendee.paymentProof}
+                                target="_blank"
+                                className="flex text-sm"
+                              >
+                                <Button size="sm" variant="secondary">
+                                  See proof
+                                  <ExternalLink size={12} />
+                                </Button>
+                              </Link>
+                              {!attendee.approved && (
+                                <form action={markAsPaid}>
+                                  <input
+                                    type="hidden"
+                                    name="id"
+                                    value={attendee.id}
+                                  />
+                                  <Button
+                                    type="submit"
+                                    size="sm"
+                                    variant="ghost"
+                                  >
+                                    Mark as paid
+                                    <CheckIcon size={12} />
+                                  </Button>
+                                </form>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </CardContent>
                 </Card>
               </div>

@@ -21,7 +21,7 @@ export function MyEvents() {
         ? "...loading"
         : data?.map((event) => (
             <Card
-              onClick={() => router.push(`/dashboard/events/${event.id}`)}
+              onClick={() => router.push(`/events/${event.id}`)}
               className="col-span-1 w-full cursor-pointer transition-transform hover:scale-[1.02]"
             >
               <CardHeader>
@@ -36,7 +36,7 @@ export function MyEvents() {
                   {event.attendeeLimit} remaining
                 </p>
                 <p className="text-gray-600">
-                  Location: {event.Venue.location}
+                  Location: {event.Venue?.location}
                 </p>
                 <p className="text-gray-600">
                   Date: {format(event.date, "PPP")}

@@ -1,6 +1,3 @@
-import { UserRole } from "@prisma/client";
-import { TRPCError } from "@trpc/server";
-import { hash } from "argon2";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -18,25 +15,17 @@ export const Attendee = createTRPCRouter({
       z.object({
         eventId: z.string(),
         userId: z.string(),
+        usedPaymentMethod: z.string(),
+        paymentProof: z.string().url(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const user = await ctx.db.user.findFirst({
-        where: {
-          id: input.userId,
-        },
-      });
-      if (user) {
-        throw new TRPCError({
-          message: "User already exists",
-          code: "BAD_REQUEST",
-        });
-      }
-
-      return await ctx.db.eventUser.create({
+      return await ctx.db.eventAttendee.create({
         data: {
           eventId: input.eventId,
           userId: input.userId,
+          usedPayementMethod: input.usedPaymentMethod,
+          paymentProof: input.paymentProof,
         },
       });
     }),

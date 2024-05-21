@@ -10,8 +10,11 @@ import { format } from "date-fns";
 import { db } from "~/server/db";
 import { notFound } from "next/navigation";
 import Navbar from "~/components/navbar";
-import { Dialog, DialogTrigger, DialogContent } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
+import { getServerSession } from "next-auth";
+import { authOptions } from "~/server/auth";
+import Link from "next/link";
+import RegisterAttendeeDialog from "./RegisterAttendeeDialog";
 
 const getEvent = async function (id: string) {
   return await db.event.findFirst({
@@ -20,11 +23,20 @@ const getEvent = async function (id: string) {
     },
     include: {
       Venue: true,
+      Owner: {
+        select: {
+          Setting: true,
+        },
+      },
     },
   });
 };
 
 const EventDetailPage = async ({ params }: { params: any }) => {
+  const session = await getServerSession(authOptions);
+
+  if (!session) return <>not logged in</>;
+
   const event = await getEvent(params.id as string);
 
   if (!event) {
@@ -46,16 +58,27 @@ const EventDetailPage = async ({ params }: { params: any }) => {
 
               <CardTitle className="text-3xl">{event.name}</CardTitle>
             </div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <div>
-                  <Button className="w-auto" variant="outline">
-                    Register
-                  </Button>
-                </div>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md"></DialogContent>
-            </Dialog>
+            {session.user.role === "EventPlanner" && (
+              <Link href={`/dashboard/events/${event.id}`}>
+                <Button variant="outline">Report</Button>
+              </Link>
+            )}
+            {session.user.role === "VenueOwner" && (
+              <Button className="w-auto" variant="outline">
+                Register
+              </Button>
+            )}
+            {session.user.role === "Attendee" && (
+              <RegisterAttendeeDialog
+                userId={session.user.id}
+                event={{
+                  ...event,
+                  telebirrAccount: event.Owner?.Setting?.telebirrAccount || "",
+                  cbeAccount: event.Owner?.Setting?.cbeAccount || "",
+                  boaAccount: event.Owner?.Setting?.boaAccount || "",
+                }}
+              />
+            )}
           </CardHeader>
           <CardContent>
             <Badge className="mb-8">ETB {event.price}</Badge>

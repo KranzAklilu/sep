@@ -1,9 +1,13 @@
+import { UserRole } from "@prisma/client";
+import { getServerSession } from "next-auth";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import EventCard from "~/components/EventCard";
 import Logo from "~/components/logo";
 import Navbar from "~/components/navbar";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
+import { authOptions } from "~/server/auth";
 import { db } from "~/server/db";
 
 const getEvents = async () => {
@@ -33,6 +37,12 @@ const getEvents = async () => {
 
 export default async function LandingPage() {
   const { featuredEvents, upcommingEvents } = await getEvents();
+
+  const session = await getServerSession(authOptions);
+
+  if (session?.user.role === UserRole.VenueOwner) {
+    return redirect("/dashboard/inquiries");
+  }
 
   return (
     <div className="bg-white">

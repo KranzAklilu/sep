@@ -28,16 +28,14 @@ export default withAuth(
 
     console.log({ token });
 
-    if (tokenWithUser.role === "VenueOwner") {
-      if (!tokenWithUser.venueOwnerFinishedRegistration) {
-        return NextResponse.redirect(new URL("/finish-registration", req.url));
-      }
-      if (
-        tokenWithUser.venueOwnerFinishedRegistration &&
-        req.nextUrl.pathname.startsWith("/finish-registration")
-      ) {
-        return NextResponse.redirect(new URL("/dashboard/inquires", req.url));
-      }
+    if (!tokenWithUser.finishedRegistration) {
+      return NextResponse.redirect(new URL("/finish-registration", req.url));
+    }
+    if (
+      tokenWithUser.finishedRegistration &&
+      req.nextUrl.pathname.startsWith("/finish-registration")
+    ) {
+      return NextResponse.redirect(new URL("/dashboard/inquires", req.url));
     }
   },
 
@@ -54,5 +52,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/", "/dashboard/:path*", "/login"],
+  matcher: ["/", "/dashboard/:path*", "/login", "/events/:path"],
 };

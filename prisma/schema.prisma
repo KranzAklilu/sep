@@ -183,6 +183,9 @@ model EventAttendee {
 
   user  User  @relation(fields: [userId], references: [id])
   event Event @relation(fields: [eventId], references: [id])
+  approved Boolean @default(false)
+  usedPayementMethod String 
+  paymentProof String 
 
   createdAt DateTime @default(now())
   userId    String
