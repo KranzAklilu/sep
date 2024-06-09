@@ -1,9 +1,17 @@
 import { z } from "zod";
-import { eventEditSchema, eventOrderSchema } from "~/lib/validation/event";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  eventEditSchema,
+  eventOrderSchema,
+  eventPostponeSchema,
+} from "~/lib/validation/event";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "~/server/api/trpc";
 
 export const EventPlanner = createTRPCRouter({
-  getMany: protectedProcedure.query(async ({ ctx }) => {
+  getMany: publicProcedure.query(async ({ ctx }) => {
     return await ctx.db.event.findMany({
       orderBy: { createdAt: "desc" },
       include: {
@@ -18,6 +26,7 @@ export const EventPlanner = createTRPCRouter({
       return await ctx.db.event.create({
         data: {
           ...data,
+          ownerId: ctx.session.user.id,
           venueId: venue,
         },
       });
@@ -26,6 +35,19 @@ export const EventPlanner = createTRPCRouter({
     .input(eventEditSchema.extend({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { tag, id, ...data } = input;
+      return await ctx.db.event.update({
+        where: {
+          id,
+        },
+        data: {
+          ...data,
+        },
+      });
+    }),
+  postpone: protectedProcedure
+    .input(eventPostponeSchema.extend({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
       return await ctx.db.event.update({
         where: {
           id,

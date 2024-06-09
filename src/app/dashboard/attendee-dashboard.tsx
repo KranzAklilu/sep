@@ -10,11 +10,8 @@ import {
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { CalendarDateRangePicker } from "~/views/dashboard/date-range-picker";
-import { Overview } from "~/views/dashboard/overview";
-import { RecentSales } from "~/views/dashboard/recent-sales";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
-import { CreateEventDialog } from "~/components/create-event-dialog";
 import { db } from "~/server/db";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -53,10 +50,6 @@ export default async function AttendeeDashboard() {
         <div className="flex-1 space-y-4 p-8 pt-6">
           <div className="flex items-center justify-between space-y-2">
             <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-            <div className="flex items-center space-x-2">
-              <CalendarDateRangePicker />
-              <Button>Filter</Button>
-            </div>
           </div>
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsList>

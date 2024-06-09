@@ -9,17 +9,19 @@ import {
   CardContent,
   CardDescription,
 } from "~/components/ui/card";
-import { UserNav } from "~/components/user-nav";
-import { MainNav } from "~/views/dashboard/main-nav";
-import { RecentSales } from "~/views/dashboard/recent-sales";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
 import { db } from "~/server/db";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Feedback from "~/components/Feedback";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import { Label } from "~/components/ui/label";
 import { EditEventDialog } from "~/components/edit-event-dialog";
+
+import { ExternalLink, CheckIcon } from "lucide-react";
+import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { PostponeDialog } from "~/components/postpone-dialog";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -29,6 +31,17 @@ export const metadata: Metadata = {
 const getEvent = async (id: string) => {
   return await db.event.findUnique({
     where: { id },
+    include: {
+      _count: {
+        select: {
+          EventAttendee: {
+            where: {
+              approved: true,
+            },
+          },
+        },
+      },
+    },
   });
 };
 
@@ -40,6 +53,32 @@ const getVenues = async () => {
     },
   });
 };
+
+const getReport = async (id: string) => {
+  return await db.eventAttendee.findMany({
+    where: {
+      eventId: id,
+      approved: true,
+    },
+  });
+};
+
+const getAttendees = async (id: string) => {
+  return await db.eventAttendee.findMany({
+    where: {
+      eventId: id,
+    },
+    orderBy: {
+      approved: "asc",
+    },
+    include: {
+      user: true,
+      event: true,
+    },
+    take: 100,
+  });
+};
+
 export default async function DashboardPage({ params }: { params: any }) {
   const session = await getServerSession(authOptions);
 
@@ -49,7 +88,27 @@ export default async function DashboardPage({ params }: { params: any }) {
   if (!event) return notFound();
 
   const venues = await getVenues();
-  console.log({ venues });
+
+  const attendees = await getAttendees(params.id);
+
+  async function markAsPaid(formData: FormData) {
+    "use server";
+
+    const id = formData.get("id") as string;
+
+    console.log(id);
+    if (!id) return;
+
+    await db.eventAttendee.update({
+      where: {
+        id,
+      },
+      data: {
+        approved: true,
+      },
+    });
+    redirect("/dashboard");
+  }
 
   return (
     <div className="flex flex-col">
@@ -58,7 +117,7 @@ export default async function DashboardPage({ params }: { params: any }) {
           <h2 className="text-3xl font-bold tracking-tight">{event.name}</h2>
           <div className="flex items-center space-x-2">
             <EditEventDialog event={event} venues={venues} />
-            <Button variant="outline">Postpone</Button>
+            <PostponeDialog event={event} />
             <Button variant="destructive">Cancel</Button>
           </div>
         </div>
@@ -83,10 +142,9 @@ export default async function DashboardPage({ params }: { params: any }) {
                 </svg>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">ETB45,231.89</div>
-                <p className="text-xs text-muted-foreground">
-                  +20.1% from last month
-                </p>
+                <div className="text-2xl font-bold">
+                  ETB{event.price * event._count.EventAttendee}
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -129,42 +187,68 @@ export default async function DashboardPage({ params }: { params: any }) {
                 </svg>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">+150</div>
-                <p className="text-xs text-muted-foreground">
-                  +19% from last month
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Active Events now
-                </CardTitle>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  className="h-4 w-4 text-muted-foreground"
-                >
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                </svg>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">2</div>
+                <div className="text-2xl font-bold">
+                  {event._count.EventAttendee}
+                </div>
               </CardContent>
             </Card>
           </div>
           <Card className="col-span-3">
             <CardHeader>
-              <CardTitle>Registered Attendee</CardTitle>
-              <CardDescription>20 attendees registered</CardDescription>
+              <CardTitle>Recent Attendee</CardTitle>
+              <CardDescription>
+                Displayed the last 100 attendees
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <RecentSales />
+              <div className="space-y-8">
+                {attendees.map((attendee) => {
+                  return (
+                    <div className="flex items-center">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src="/avatars/05.png" alt="Avatar" />
+                        <AvatarFallback>
+                          {attendee.user.name?.slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="ml-4 space-y-1">
+                        <p className="text-sm font-medium capitalize leading-none">
+                          {attendee.user.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {attendee.event.name} (+ETB
+                          {attendee.event.price})
+                        </p>
+                      </div>
+                      <div className="ml-auto flex items-center gap-4 font-medium">
+                        <Link
+                          href={attendee.paymentProof}
+                          target="_blank"
+                          className="flex text-sm"
+                        >
+                          <Button size="sm" variant="secondary">
+                            See proof
+                            <ExternalLink size={12} />
+                          </Button>
+                        </Link>
+                        {!attendee.approved && (
+                          <form action={markAsPaid}>
+                            <input
+                              type="hidden"
+                              name="id"
+                              value={attendee.id}
+                            />
+                            <Button type="submit" size="sm" variant="ghost">
+                              Mark as paid
+                              <CheckIcon size={12} />
+                            </Button>
+                          </form>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </CardContent>
           </Card>
         </div>

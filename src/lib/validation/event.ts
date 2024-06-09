@@ -15,3 +15,8 @@ export const eventOrderSchema = z.object({
 });
 
 export const eventEditSchema = eventOrderSchema.omit({ venue: true });
+export const eventPostponeSchema = eventOrderSchema.pick({
+  date: true,
+  startTime: true,
+  endTime: true,
+});

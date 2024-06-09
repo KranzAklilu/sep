@@ -72,6 +72,7 @@ export const authOptions: NextAuthOptions = {
         }
         return token;
       }
+      console.log({ dbUser });
       return {
         id: dbUser.id,
         name: dbUser.name,

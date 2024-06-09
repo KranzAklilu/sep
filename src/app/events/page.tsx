@@ -14,11 +14,10 @@ const getVenues = async () => {
 export default async function EventPlannerDashboard() {
   const session = await getServerSession(authOptions);
 
-  if (!session) return <>not logged in</>;
+  // if (!session) return <>not logged in</>;
 
   return (
     <>
-      <Navbar />
       <div className="grid gap-4 p-10 md:grid-cols-2 lg:grid-cols-7">
         <Input
           placeholder="Search..."

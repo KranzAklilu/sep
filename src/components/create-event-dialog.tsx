@@ -32,7 +32,7 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "~/lib/utils";
 
-import { EditorState, convertToRaw } from "draft-js";
+import { ContentState, EditorState, convertToRaw } from "draft-js";
 import { Editor } from "react-draft-wysiwyg";
 import draftToHtml from "draftjs-to-html";
 // import htmlToDraft from "html-to-draftjs";
@@ -49,13 +49,13 @@ import { api } from "~/trpc/react";
 import { toast } from "./ui/use-toast";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Venue } from "@prisma/client";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
+import htmlToDraft from "html-to-draftjs";
 
 export function CreateEventDialog({
   venues,
 }: {
-  venues: { id: string; name: string }[];
+  venues: { id: string; name: string; location: string }[];
 }) {
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
 
@@ -79,11 +79,40 @@ export function CreateEventDialog({
     },
   });
 
+  const defaultDescriptionEditorText = `
+<h1>🎉 Welcome to ${form.watch("name")}! 🎉</h1>
+Join us for an unforgettable experience at ${form.watch("name")}, where innovation meets excitement in the heart of ${venues.find(({ id }) => form.watch("venue") === id)?.location}. Get ready to immerse yourself in a day (or days) filled with inspiration, learning, and connection.
+📅 Date: ${form.watch("date")}
+📍 Location: ${venues.find(({ id }) => form.watch("venue") === id)?.location}
+About ${form.watch("name")}:
+${form.watch("name")} is not just an event; it's a celebration of [Industry/Theme]. Whether you're a seasoned professional, an aspiring enthusiast, or simply curious about [Event Theme], there's something here for everyone. From captivating keynote speakers to interactive workshops, from networking opportunities to hands-on demonstrations, ${form.watch("name")} promises to ignite your passion and propel you forward.
+What to Expect:
+✨ Inspiring Speakers: Be inspired by industry leaders and visionaries who will share their insights and expertise.
+🌟 Engaging Workshops: Dive deep into topics that matter to you with hands-on workshops and interactive sessions.
+🤝 Networking: Connect with like-minded individuals, forge new partnerships, and expand your professional network.
+🎨 Interactive Exhibits: Explore the latest innovations and trends through interactive exhibits and showcases.
+🎁 Surprises: Expect the unexpected! ${form.watch("name")} is full of surprises and special moments that will leave you inspired and energized.
+Who Should Attend:
+${form.watch("name")} welcomes professionals, enthusiasts, students, entrepreneurs, and anyone passionate about [Event Theme]. Whether you're looking to learn, network, or simply be inspired, you'll find your place among our diverse community of attendees.
+Get Involved:
+Ready to be part of something extraordinary? Join us at ${form.watch("name")} and unlock endless opportunities for growth, learning, and collaboration. Reserve your spot today and embark on a journey to elevate your [Industry/Interest] experience to new heights!
+Connect with Us:
+Follow us on [Social Media Platforms] for the latest updates, behind-the-scenes glimpses, and exclusive content leading up to ${form.watch("name")}. Have a question or need assistance? Don't hesitate to reach out to our friendly team at [Contact Information].
+${form.watch("name")} is more than just an event; it's a community coming together to celebrate, learn, and grow. We can't wait to welcome you to the ${form.watch("name")} family!
+`;
+
   useEffect(() => {
     if (params.get("create-event")) {
       setOpen(true);
     }
   }, []);
+
+  useEffect(() => {
+    const contentState = ContentState.createFromBlockArray(
+      htmlToDraft(defaultDescriptionEditorText).contentBlocks,
+    );
+    setEditorState(EditorState.createWithContent(contentState));
+  }, [form.watch("name"), form.watch("date")]);
 
   async function onSubmit(values: z.infer<typeof schema>) {
     await mutateAsync({ ...values });

@@ -14,7 +14,7 @@ import { Button } from "~/components/ui/button";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
 import Link from "next/link";
-import RegisterAttendeeDialog from "./RegisterAttendeeDialog";
+import RegisterAttendeeDialog from "~/views/dashboard/RegisterAttendeeDialog";
 
 const getEvent = async function (id: string) {
   return await db.event.findFirst({
@@ -23,6 +23,11 @@ const getEvent = async function (id: string) {
     },
     include: {
       Venue: true,
+      EventAttendee: {
+        select: {
+          userId: true,
+        },
+      },
       Owner: {
         select: {
           Setting: true,
@@ -35,7 +40,7 @@ const getEvent = async function (id: string) {
 const EventDetailPage = async ({ params }: { params: any }) => {
   const session = await getServerSession(authOptions);
 
-  if (!session) return <>not logged in</>;
+  // if (!session) return <>not logged in</>;
 
   const event = await getEvent(params.id as string);
 
@@ -45,7 +50,6 @@ const EventDetailPage = async ({ params }: { params: any }) => {
 
   return (
     <>
-      <Navbar />
       <div className="mt-10 px-28">
         <Card className="mx-auto w-full shadow-none">
           <CardHeader className="flex flex-row justify-between">
@@ -58,27 +62,38 @@ const EventDetailPage = async ({ params }: { params: any }) => {
 
               <CardTitle className="text-3xl">{event.name}</CardTitle>
             </div>
-            {session.user.role === "EventPlanner" && (
+            <Link href={`/register`}>
+              {!session?.user && (
+                <Button variant="outline">Get Involved</Button>
+              )}
+            </Link>
+            {session?.user.role === "EventPlanner" && (
               <Link href={`/dashboard/events/${event.id}`}>
                 <Button variant="outline">Report</Button>
               </Link>
             )}
-            {session.user.role === "VenueOwner" && (
+            {session?.user.role === "VenueOwner" && (
               <Button className="w-auto" variant="outline">
                 Register
               </Button>
             )}
-            {session.user.role === "Attendee" && (
-              <RegisterAttendeeDialog
-                userId={session.user.id}
-                event={{
-                  ...event,
-                  telebirrAccount: event.Owner?.Setting?.telebirrAccount || "",
-                  cbeAccount: event.Owner?.Setting?.cbeAccount || "",
-                  boaAccount: event.Owner?.Setting?.boaAccount || "",
-                }}
-              />
-            )}
+            {session?.user.role === "Attendee" &&
+              (event.EventAttendee.find(
+                ({ userId }) => userId === session.user.id,
+              ) ? (
+                <Badge variant="secondary">Registered</Badge>
+              ) : (
+                <RegisterAttendeeDialog
+                  userId={session.user.id}
+                  event={{
+                    ...event,
+                    telebirrAccount:
+                      event.Owner?.Setting?.telebirrAccount || "",
+                    cbeAccount: event.Owner?.Setting?.cbeAccount || "",
+                    boaAccount: event.Owner?.Setting?.boaAccount || "",
+                  }}
+                />
+              ))}
           </CardHeader>
           <CardContent>
             <Badge className="mb-8">ETB {event.price}</Badge>

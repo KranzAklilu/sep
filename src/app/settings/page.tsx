@@ -16,6 +16,7 @@ import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
 import { db } from "~/server/db";
 import { Button } from "~/components/ui/button";
+import { toast } from "~/components/ui/use-toast";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -51,6 +52,7 @@ export default async function DashboardPage({ params }: { params: any }) {
       cbeAccount: formData.get("cbe")?.toString() || undefined,
       boaAccount: formData.get("boa")?.toString() || undefined,
     };
+    console.log({ data });
 
     await db.settings.upsert({
       where: {
@@ -64,21 +66,11 @@ export default async function DashboardPage({ params }: { params: any }) {
         userId: session.user.id,
       },
     });
+    toast({ title: "success" });
   }
 
   return (
     <div className="flex flex-col">
-      <div className="border-b">
-        <div className="flex h-16 items-center px-4">
-          <Logo />
-          <MainNav className="mx-6" />
-          <div className="ml-auto flex items-center space-x-4">
-            <Search />
-
-            <UserNav session={session} />
-          </div>
-        </div>
-      </div>
       <Card>
         <CardHeader>
           <CardTitle> Payment</CardTitle>
@@ -90,16 +82,25 @@ export default async function DashboardPage({ params }: { params: any }) {
             <Label htmlFor="telebirr">Your telebirr account phone number</Label>
             <Input
               id="telebirr"
+              name="telebirr"
               defaultValue={settings?.telebirrAccount || ""}
             />
           </div>
           <div className="">
             <Label htmlFor="cbe">Your CBE account no.</Label>
-            <Input id="cbe" defaultValue={settings?.cbeAccount || ""} />
+            <Input
+              id="cbe"
+              name="cbe"
+              defaultValue={settings?.cbeAccount || ""}
+            />
           </div>
           <div className="">
-            <Label htmlFor="cbe">Your BOA account no.</Label>
-            <Input id="boa" defaultValue={settings?.boaAccount || ""} />
+            <Label htmlFor="boa">Your BOA account no.</Label>
+            <Input
+              id="boa"
+              name="boa"
+              defaultValue={settings?.boaAccount || ""}
+            />
           </div>
           <Button type="submit">Save</Button>
         </form>

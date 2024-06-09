@@ -6,6 +6,7 @@ export async function eventSeed() {
       data: {
         name: "Name" + i,
         price: 100,
+        featured: i === 1 || i === 2,
         Venue: {
           create: {
             name: "venue " + i,
