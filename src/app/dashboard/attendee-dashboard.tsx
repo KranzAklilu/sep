@@ -22,11 +22,12 @@ const getEvents = async (userId: string) => {
       EventAttendee: {
         some: {
           userId,
-          approved: true,
+          // approved: true,
         },
       },
     },
     include: {
+      EventAttendee: true,
       Venue: {
         select: {
           name: true,
@@ -106,7 +107,11 @@ export default async function AttendeeDashboard() {
                                   className="mb-2 max-w-max"
                                   variant="secondary"
                                 >
-                                  Active
+                                  {event.EventAttendee.find(
+                                    (e) => e.userId === session.user.id,
+                                  )?.approved
+                                    ? "Active"
+                                    : "Watiing"}
                                 </Badge>
                                 <CardTitle>{event.name}</CardTitle>
                               </CardHeader>

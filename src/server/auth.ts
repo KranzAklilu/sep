@@ -24,6 +24,7 @@ declare module "next-auth" {
       id: string;
       role: UserRole;
       finishedRegistration: boolean | null;
+      approved: boolean | null;
     } & DefaultSession["user"];
   }
 
@@ -47,6 +48,7 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email;
         session.user.image = token.picture;
         session.user.role = token.role as UserRole;
+        session.user.approved = token.approved as boolean;
         session.user.finishedRegistration = token.finishedRegistration as
           | boolean
           | null;
@@ -79,20 +81,25 @@ export const authOptions: NextAuthOptions = {
         email: dbUser.email,
         role: dbUser.role,
         picture: dbUser.image,
+        approved: dbUser.approved,
         finishedRegistration: !dbUser
           ? null
-          : dbUser.role === "VenueOwner"
-            ? !!dbUser.Venue?.name ||
-              !!dbUser.Venue?.location ||
-              !!dbUser.Venue?.pricePerHour ||
-              !!dbUser.Venue?.capacity ||
-              !!dbUser.Venue?.phone ||
-              !!dbUser.Venue?.openHour ||
-              !!dbUser.Venue?.closeHour ||
-              !!dbUser.Venue?.availableDate
-            : dbUser.role === "Attendee"
-              ? !!dbUser.name || !!dbUser.phone || !!dbUser.address
-              : true,
+          : dbUser.role === "EventPlanner"
+            ? !!dbUser.licenceDocument
+            : dbUser.role === "Vendor"
+              ? !!dbUser.phone || !!dbUser.licenceDocument
+              : dbUser.role === "VenueOwner"
+                ? !!dbUser.Venue?.name ||
+                  !!dbUser.Venue?.location ||
+                  !!dbUser.Venue?.pricePerHour ||
+                  !!dbUser.Venue?.capacity ||
+                  !!dbUser.Venue?.phone ||
+                  !!dbUser.Venue?.openHour ||
+                  !!dbUser.Venue?.closeHour ||
+                  !!dbUser.Venue?.availableDate
+                : dbUser.role === "Attendee"
+                  ? !!dbUser.name || !!dbUser.phone || !!dbUser.address
+                  : true,
       };
     },
   },

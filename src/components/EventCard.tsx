@@ -19,8 +19,8 @@ const EventCard = ({
   remaining?: number;
 }) => {
   return (
-    <Link href={`/events/${event.id}`}>
-      <Card className="w-full cursor-pointer">
+    <Link className="w-full" href={`/events/${event.id}`}>
+      <Card className="h-full w-full cursor-pointer">
         <CardHeader>
           {event.featured && (
             <Badge className="mb-2 max-w-max" variant="secondary">

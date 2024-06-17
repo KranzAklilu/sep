@@ -1,9 +1,12 @@
 import { z } from "zod";
-import { venueCreateSchema } from "~/lib/validation/venue";
+import { venueCreateSchema, venueUpdateSchema } from "~/lib/validation/venue";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const Venue = createTRPCRouter({
+  getList: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db.venue.findMany();
+  }),
   searchVenue: protectedProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
@@ -32,6 +35,24 @@ export const Venue = createTRPCRouter({
         data: {
           ...input,
           ownerId: ctx.session.user.id,
+        },
+      });
+    }),
+  update: protectedProcedure
+    .input(venueUpdateSchema)
+    .mutation(async ({ ctx, input: { username, ...input } }) => {
+      await ctx.db.user.update({
+        where: { id: ctx.session.user.id },
+        data: {
+          name: username,
+        },
+      });
+      return await ctx.db.venue.update({
+        where: {
+          ownerId: ctx.session.user.id,
+        },
+        data: {
+          ...input,
         },
       });
     }),

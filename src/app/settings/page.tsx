@@ -105,9 +105,7 @@ export default async function DashboardPage({ params }: { params: any }) {
           <Button type="submit">Save</Button>
         </form>
       </Card>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Feedback />
-      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7"></div>
     </div>
   );
 }

@@ -28,6 +28,7 @@ model Event {
   featured      Boolean  @default(false)
   acceptedByVenue Boolean @default(false)
   rejectedByVenue Boolean @default(false)
+  prefferedPaymentMethod String @default("telebirr")
 
   vendorInstruction String?
 
@@ -37,6 +38,7 @@ model Event {
   EventSession  EventSession[]
   EventAttendee EventAttendee[]
   Feedback      Feedback[]
+  feedbackQuestions String[]
   EventVendor   EventVendor[]
   Owner         User?           @relation(fields: [ownerId], references: [id])
   ownerId       String?
@@ -116,6 +118,9 @@ model Venue {
   availableDate Int[]
   openHour      String
   closeHour     String
+
+  lat           Float?
+  lng           Float?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
@@ -202,8 +207,10 @@ model User {
   password      String?
   phone         String?
   role          UserRole  @default(Attendee)
+  licenceDocument String?
   Account       Account[]
   Session       Session[]
+  approved      Boolean? 
 
   createdAt     DateTime        @default(now())
   updatedAt     DateTime?       @updatedAt
@@ -228,4 +235,5 @@ enum UserRole {
   EventPlanner
   VenueOwner
   Attendee
+  Vendor
 }

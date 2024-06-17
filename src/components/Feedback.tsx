@@ -5,14 +5,33 @@ import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 import { Input } from "./ui/input";
 import { Table, TableBody, TableRow, TableCell } from "./ui/table";
 import { Button } from "./ui/button";
+import { api } from "~/trpc/react";
+import { toast } from "./ui/use-toast";
 
-function Feedback() {
+function Feedback({
+  eventId,
+  feedbackQuestions,
+}: {
+  feedbackQuestions: string[];
+  eventId: string;
+}) {
   const [feedback, setFeedback] = useState<
     { id: string; name: string; isBeingEdited: boolean }[]
-  >([]);
+  >(
+    feedbackQuestions.map((f, i) => ({
+      id: i + "",
+      name: f,
+      isBeingEdited: false,
+    })),
+  );
 
   const [term, setTerm] = useState("");
 
+  const { mutateAsync } = api.event.createFeedbackQuestions.useMutation({
+    onSuccess: async () => {
+      toast({ title: "Successfully created feedback questions" });
+    },
+  });
   return (
     <Card className="col-span-8 w-full">
       <CardHeader>
@@ -101,6 +120,16 @@ function Feedback() {
             </TableBody>
           </Table>
         </div>
+        <Button
+          onClick={async () =>
+            await mutateAsync({
+              id: eventId,
+              feedbackQuestions: feedback.map((f) => f.name),
+            })
+          }
+        >
+          Save
+        </Button>
       </CardContent>
     </Card>
   );

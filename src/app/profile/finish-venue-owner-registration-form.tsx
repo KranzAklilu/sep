@@ -16,44 +16,44 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { useToast } from "~/components/ui/use-toast";
-import Link from "next/link";
 import { api } from "~/trpc/react";
-import { venueCreateSchema as schema } from "~/lib/validation/venue";
+import { venueUpdateSchema as schema } from "~/lib/validation/venue";
 import { Textarea } from "~/components/ui/textarea";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Label } from "~/components/ui/label";
 import { addDays, format, startOfWeek } from "date-fns";
-import { signIn } from "next-auth/react";
-import { usePlacesWidget } from "react-google-autocomplete";
+import Autocomplete, { usePlacesWidget } from "react-google-autocomplete";
 
-export default function FinishVenueOwnerRegistrationForm() {
+export default function FinishVenueOwnerRegistrationForm({
+  data,
+}: {
+  data: any;
+}) {
   const { toast } = useToast();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      availableDate: [],
+      ...data,
     },
   });
-  const { mutateAsync, isLoading } = api.venue.create.useMutation({
-    onSuccess: async () => {
-      toast({ title: "Registered successfully" });
-      const cred = localStorage.getItem("cert");
-      if (!cred) return;
-      const credParsed = JSON.parse(cred);
-
-      await signIn("credentials", {
-        email: credParsed.email,
-        password: credParsed.password,
-      });
+  const { mutateAsync, isLoading } = api.venue.update.useMutation({
+    onSuccess: () => {
       router.push("/dashboard/inquiries");
+      toast({ title: "updated successfully" });
     },
     onError: (err) => {
       toast({ title: "unexpected error has occured" });
       console.log(err);
     },
   });
+
+  async function onSubmit(data: z.infer<typeof schema>) {
+    await mutateAsync({
+      ...data,
+    });
+  }
   const { ref } = usePlacesWidget({
     apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY,
     onPlaceSelected: (place) => {
@@ -65,11 +65,7 @@ export default function FinishVenueOwnerRegistrationForm() {
       componentRestrictions: { country: "et" },
     },
   });
-  async function onSubmit(data: z.infer<typeof schema>) {
-    await mutateAsync({
-      ...data,
-    });
-  }
+  console.log(ref);
 
   return (
     <Form {...form}>
@@ -85,6 +81,19 @@ export default function FinishVenueOwnerRegistrationForm() {
             </p>
           </div>
           <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input {...field} disabled={isLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="name"
@@ -111,6 +120,7 @@ export default function FinishVenueOwnerRegistrationForm() {
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="location"
@@ -119,7 +129,6 @@ export default function FinishVenueOwnerRegistrationForm() {
                   <FormLabel htmlFor="password">Location</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isLoading}
                       ref={ref as any}
                       onChange={(event) => {
                         field.onChange(event.target.value);
@@ -253,15 +262,6 @@ export default function FinishVenueOwnerRegistrationForm() {
               >
                 Continue
               </Button>
-
-              <span>---or---</span>
-
-              <Link
-                href="/register"
-                className={buttonVariants({ variant: "outline", size: "sm" })}
-              >
-                Create an account
-              </Link>
             </div>
           </div>
         </div>

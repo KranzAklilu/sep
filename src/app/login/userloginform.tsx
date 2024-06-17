@@ -44,6 +44,14 @@ export default function UserLoginForm() {
         callbackUrl: "/dashboard",
       });
 
+      localStorage.setItem(
+        "cert",
+        JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
+      );
+
       if (res && !res?.ok && res.error) {
         toast({
           title: JSON.parse(res.error ?? "").message ?? "Something went wrong",

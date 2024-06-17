@@ -152,6 +152,12 @@ export default function UserRegistrationForm() {
                             Venue Owner
                           </FormLabel>
                         </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value={UserRole.Vendor} />
+                          </FormControl>
+                          <FormLabel className="font-normal">Vendor</FormLabel>
+                        </FormItem>
                       </RadioGroup>
                     </FormControl>
                     <FormMessage />

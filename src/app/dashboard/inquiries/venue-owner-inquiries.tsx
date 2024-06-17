@@ -16,11 +16,19 @@ import {
 } from "~/components/ui/table";
 import { Event } from "@prisma/client";
 import { format } from "date-fns";
+import { Button } from "~/components/ui/button";
+import { changeEvStatus } from "./actions";
+import Link from "next/link";
 
 export default function FinishVenueOwnerRegistrationForm({
   appliedEvents,
+  req = false,
 }: {
-  appliedEvents: (Event & { phone: string })[];
+  appliedEvents: (Event & {
+    phone: string;
+    evId: string;
+  })[];
+  req?: boolean;
 }) {
   const { toast } = useToast();
   const router = useRouter();
@@ -46,17 +54,20 @@ export default function FinishVenueOwnerRegistrationForm({
   });
 
   return (
-    <div className="mx-auto max-w-4xl py-10">
-      <h1 className="mb-10 text-2xl">Latest inquiries</h1>
-
+    <div>
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-[300px]">Event name</TableHead>
             <TableHead>Phone</TableHead>
             <TableHead>Expected no of attendee</TableHead>
-            <TableHead className="text-right">Date</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
+            <TableHead>Date</TableHead>
+            {req && (
+              <>
+                <TableHead className="text-right">Accept</TableHead>
+                <TableHead className="text-right">Reject</TableHead>
+              </>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -69,11 +80,40 @@ export default function FinishVenueOwnerRegistrationForm({
           )}
           {appliedEvents.map((event) => (
             <TableRow key={event.id}>
-              <TableCell className="font-medium">{event.name}</TableCell>
+              <TableCell className="font-medium">
+                <Link href={`/events/${event.id}`}>{event.name}</Link>
+              </TableCell>
+              <TableCell>{event.phone}</TableCell>
               <TableCell>{event.attendeeLimit}</TableCell>
               <TableCell>{format(event.date, "yyyy-MM-dd")}</TableCell>
-              <TableCell className="text-right">accept</TableCell>
-              <TableCell className="text-right">reject</TableCell>
+              {req && (
+                <>
+                  <TableCell className="text-right">
+                    <Button
+                      onClick={async () => {
+                        await changeEvStatus(event.evId, "Accept");
+                        router.refresh();
+                        toast({ title: "Thanks for accepting" });
+                      }}
+                      variant="ghost"
+                    >
+                      Accept
+                    </Button>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      onClick={async () => {
+                        await changeEvStatus(event.evId, "Reject");
+                        router.refresh();
+                        toast({ title: "Rejected!" });
+                      }}
+                      variant="ghost"
+                    >
+                      Reject
+                    </Button>
+                  </TableCell>
+                </>
+              )}
             </TableRow>
           ))}
         </TableBody>

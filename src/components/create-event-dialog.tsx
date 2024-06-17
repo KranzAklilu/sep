@@ -26,10 +26,9 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "~/components/ui/popover";
-import { Textarea } from "~/components/ui/textarea";
 import { Calendar } from "~/components/ui/calendar";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown, InfoIcon } from "lucide-react";
 import { cn } from "~/lib/utils";
 
 import { ContentState, EditorState, convertToRaw } from "draft-js";
@@ -37,13 +36,6 @@ import { Editor } from "react-draft-wysiwyg";
 import draftToHtml from "draftjs-to-html";
 // import htmlToDraft from "html-to-draftjs";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import { eventOrderSchema as schema } from "~/lib/validation/event";
 import { api } from "~/trpc/react";
 import { toast } from "./ui/use-toast";
@@ -51,6 +43,14 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import htmlToDraft from "html-to-draftjs";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "./ui/command";
+import Link from "next/link";
 
 export function CreateEventDialog({
   venues,
@@ -68,6 +68,7 @@ export function CreateEventDialog({
     onSuccess: async () => {
       toast({ title: "Successfully created event" });
       utils.event.getMany.invalidate();
+      utils.event.getMy.invalidate();
       setOpen(false);
     },
   });
@@ -76,6 +77,7 @@ export function CreateEventDialog({
     defaultValues: {
       name: "",
       date: new Date(),
+      venue: params.get("venue") || "",
     },
   });
 
@@ -188,24 +190,59 @@ ${form.watch("name")} is more than just an event; it's a community coming togeth
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Venu</FormLabel>
-                    <Select
-                      required
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a venu" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {venues.map((venue) => (
-                          <SelectItem key={venue.id} value={venue.id}>
-                            {venue.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className="w-[200px] justify-between"
+                          >
+                            {field.value
+                              ? venues.find(
+                                  (framework) => framework.id === field.value,
+                                )?.name
+                              : "Select venue..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[200px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Search venue..." />
+                          <CommandEmpty>No venue found.</CommandEmpty>
+                          <CommandGroup>
+                            {venues.map((v) => (
+                              <CommandItem
+                                key={v.id}
+                                value={v.name}
+                                onSelect={(currentValue) => {
+                                  field.onChange(
+                                    venues.find(
+                                      (v) =>
+                                        v.name.toLowerCase() === currentValue,
+                                    )?.id,
+                                  );
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    field.value === v.id
+                                      ? "opacity-100"
+                                      : "opacity-0",
+                                  )}
+                                />
+                                <p className="w-full">{v.name}</p>
+                                <Link href={`/venues/${v.id}`}>
+                                  <InfoIcon className="h-4 w-4" />
+                                </Link>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -330,7 +367,7 @@ ${form.watch("name")} is more than just an event; it's a community coming togeth
               <FormField
                 control={form.control}
                 name="description"
-                render={({ field }) => (
+                render={() => (
                   <FormItem className="col-span-3">
                     <FormLabel htmlFor="name" className="text-right">
                       Description

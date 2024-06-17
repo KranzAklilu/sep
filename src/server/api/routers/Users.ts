@@ -34,7 +34,7 @@ export const Users = createTRPCRouter({
   update: publicProcedure
     .input(userUpdateSchema)
     .mutation(async ({ ctx, input }) => {
-      const { name, address, phone } = input;
+      const { name, address, phone, licenceDocument } = input;
       console.log(ctx.session);
       return await ctx.db.user.update({
         where: {
@@ -44,6 +44,7 @@ export const Users = createTRPCRouter({
           name,
           address,
           phone,
+          licenceDocument,
         },
       });
     }),

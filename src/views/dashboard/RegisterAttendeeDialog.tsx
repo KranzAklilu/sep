@@ -58,7 +58,7 @@ const RegisterAttendeeDialog = ({
             e.preventDefault();
             if (!paymentProof) {
               return toast({
-                title: "paymet proof required",
+                title: "payment proof required",
                 variant: "destructive",
               });
             }

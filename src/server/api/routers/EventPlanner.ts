@@ -16,6 +16,17 @@ export const EventPlanner = createTRPCRouter({
       orderBy: { createdAt: "desc" },
       include: {
         Venue: true,
+        EventVenue: true,
+      },
+    });
+  }),
+  getMy: publicProcedure.query(async ({ ctx }) => {
+    return await ctx.db.event.findMany({
+      where: { ownerId: ctx.session?.user.id },
+      orderBy: { createdAt: "desc" },
+      include: {
+        Venue: true,
+        EventVenue: true,
       },
     });
   }),
@@ -23,13 +34,21 @@ export const EventPlanner = createTRPCRouter({
     .input(eventOrderSchema)
     .mutation(async ({ ctx, input }) => {
       const { venue, tag, ...data } = input;
-      return await ctx.db.event.create({
+
+      const ev = await ctx.db.event.create({
         data: {
           ...data,
           ownerId: ctx.session.user.id,
           venueId: venue,
         },
       });
+      await ctx.db.eventVenue.create({
+        data: {
+          eventId: ev.id,
+          venueId: venue,
+        },
+      });
+      return ev;
     }),
   editEvent: protectedProcedure
     .input(eventEditSchema.extend({ id: z.string() }))
@@ -41,6 +60,19 @@ export const EventPlanner = createTRPCRouter({
         },
         data: {
           ...data,
+        },
+      });
+    }),
+  createFeedbackQuestions: protectedProcedure
+    .input(z.object({ id: z.string(), feedbackQuestions: z.array(z.string()) }))
+    .mutation(async ({ ctx, input }) => {
+      const { id, feedbackQuestions } = input;
+      return await ctx.db.event.update({
+        where: {
+          id,
+        },
+        data: {
+          feedbackQuestions,
         },
       });
     }),

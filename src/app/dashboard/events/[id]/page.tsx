@@ -91,6 +91,22 @@ export default async function DashboardPage({ params }: { params: any }) {
 
   const attendees = await getAttendees(params.id);
 
+  async function changePrefferedPaymentMethod(formData: FormData) {
+    "use server";
+    const method = formData.get("method") as string;
+
+    if (!method) return;
+
+    await db.event.update({
+      where: {
+        id: event?.id,
+      },
+      data: {
+        prefferedPaymentMethod: method,
+      },
+    });
+  }
+
   async function markAsPaid(formData: FormData) {
     "use server";
 
@@ -259,8 +275,14 @@ export default async function DashboardPage({ params }: { params: any }) {
             <CardDescription>choose suitable payment method</CardDescription>
           </CardHeader>
 
-          <div className="px-8 py-8">
-            <RadioGroup defaultValue="comfortable">
+          <form
+            className="space-y-8 px-8 py-8"
+            action={changePrefferedPaymentMethod}
+          >
+            <RadioGroup
+              name="method"
+              defaultValue={event.prefferedPaymentMethod}
+            >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="telebirr" id="r1" />
                 <Label htmlFor="r1">telebirr</Label>
@@ -274,10 +296,14 @@ export default async function DashboardPage({ params }: { params: any }) {
                 <Label htmlFor="r3">BOA</Label>
               </div>
             </RadioGroup>
-          </div>
+            <Button type="submit">Save</Button>
+          </form>
         </Card>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Feedback />
+          <Feedback
+            eventId={event.id}
+            feedbackQuestions={event.feedbackQuestions}
+          />
         </div>
       </div>
     </div>

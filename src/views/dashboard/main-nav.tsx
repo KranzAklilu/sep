@@ -28,6 +28,7 @@ const links = [
       UserRole.Attendee,
       UserRole.EventPlanner,
       UserRole.VenueOwner,
+      UserRole.Vendor,
     ],
   },
   {
@@ -36,8 +37,8 @@ const links = [
     roles: [UserRole.Attendee, UserRole.EventPlanner],
   },
   {
-    href: "/attendees",
-    label: "Attendees",
+    href: "/venues",
+    label: "Venues",
     roles: [UserRole.EventPlanner],
   },
   {
@@ -59,6 +60,7 @@ export function MainNav({ session }: { session: Session }) {
             .filter(({ roles }) => roles.includes(session.user.role))
             .map(({ href, label }) => (
               <Link
+                key={href}
                 href={href}
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
               >
@@ -92,10 +94,15 @@ export function MainNav({ session }: { session: Session }) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  Profile
-                  <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                </DropdownMenuItem>
+                <Link
+                  href="/profile"
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                >
+                  <DropdownMenuItem>
+                    Profile
+                    <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </Link>
                 <DropdownMenuItem>
                   Settings
                   <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>

@@ -28,8 +28,26 @@ export default withAuth(
 
     console.log({ token });
 
-    if (!tokenWithUser.finishedRegistration) {
+    if (
+      !tokenWithUser.finishedRegistration &&
+      !req.nextUrl.pathname.startsWith("/finish-registration")
+    ) {
       return NextResponse.redirect(new URL("/finish-registration", req.url));
+    }
+
+    if (tokenWithUser.role !== "ADMIN" && !tokenWithUser.approved) {
+      if (
+        tokenWithUser.approved === null &&
+        !req.nextUrl.pathname.startsWith("/under-review")
+      ) {
+        return NextResponse.redirect(new URL("/under-review", req.url));
+      }
+      if (
+        tokenWithUser.approved === false &&
+        !req.nextUrl.pathname.startsWith("/rejected")
+      ) {
+        return NextResponse.redirect(new URL("/rejected", req.url));
+      }
     }
     if (
       tokenWithUser.finishedRegistration &&
@@ -52,5 +70,11 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: [
+    "/dashboard/:path*",
+    "/login",
+    "/under-review",
+    "/rejected",
+    // "/finish-registration",
+  ],
 };

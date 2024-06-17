@@ -9,6 +9,7 @@ import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { authOptions } from "~/server/auth";
 import { db } from "~/server/db";
+import AdminTables from "./_admin_tables";
 
 const getEvents = async () => {
   const upcommingEvents = await db.event.findMany({
@@ -47,6 +48,10 @@ export default async function LandingPage() {
 
   if (session?.user.role === UserRole.VenueOwner) {
     return redirect("/dashboard/inquiries");
+  }
+
+  if (session?.user.role === UserRole.ADMIN) {
+    return <AdminTables />;
   }
 
   return (

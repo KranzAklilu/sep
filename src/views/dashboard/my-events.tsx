@@ -12,7 +12,7 @@ import {
 import { api } from "~/trpc/react";
 
 export function MyEvents() {
-  const { data, isLoading } = api.event.getMany.useQuery();
+  const { data, isLoading } = api.event.getMy.useQuery();
   const router = useRouter();
 
   return (
@@ -26,7 +26,13 @@ export function MyEvents() {
             >
               <CardHeader>
                 <Badge className="mb-2 max-w-max" variant="secondary">
-                  Active
+                  {event.EventVenue.find((ev) => ev.eventId === event.id)
+                    ?.accepted
+                    ? "Active"
+                    : event.EventVenue.find((ev) => ev.eventId === event.id)
+                          ?.rejected
+                      ? "Rejected"
+                      : "Waiting"}
                 </Badge>
                 <CardTitle>{event.name}</CardTitle>
               </CardHeader>

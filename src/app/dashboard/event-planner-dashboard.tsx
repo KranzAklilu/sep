@@ -1,5 +1,4 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
-import { Button } from "~/components/ui/button";
 import {
   Card,
   CardHeader,
@@ -7,8 +6,6 @@ import {
   CardContent,
   CardDescription,
 } from "~/components/ui/card";
-import { CalendarDateRangePicker } from "~/views/dashboard/date-range-picker";
-import { Overview } from "~/views/dashboard/overview";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
 import { MyEvents } from "~/views/dashboard/my-events";
@@ -141,14 +138,6 @@ export default async function EventPlannerDashboard() {
                 </Card>
               </div>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="col-span-4">
-                  <CardHeader>
-                    <CardTitle>Overview</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pl-2">
-                    <Overview />
-                  </CardContent>
-                </Card>
                 <RecentAttendees />
               </div>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">

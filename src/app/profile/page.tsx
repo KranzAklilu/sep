@@ -4,13 +4,16 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
 import { redirect } from "next/navigation";
 import FinishAttendeeRegistrationForm from "./finish-attendee-registration-form";
-import FinishEpRegistrationForm from "./finish-ep-registration-form";
-import FinishVeRegistrationForm from "./finish-ve-registration-form";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 
-const getVenue = async (userId: string) => {
-  await db.venue.findUnique({
+const getUser = async (userId: string) => {
+  return await db.user.findUnique({
     where: {
-      ownerId: userId,
+      id: userId,
+    },
+    include: {
+      Venue: true,
     },
   });
 };
@@ -22,14 +25,24 @@ export default async function Page() {
     return redirect("/login");
   }
 
+  const user = await getUser(session.user.id);
+
+  if (!user) {
+    return redirect("/login");
+  }
   return (
-    <>
+    <div className="container">
       {session.user.role === "VenueOwner" && (
-        <FinishVenueOwnerRegistrationForm />
+        <FinishVenueOwnerRegistrationForm
+          data={{
+            username: user.name,
+            phone: user.phone,
+            address: user.address,
+            ...user.Venue,
+          }}
+        />
       )}
       {session.user.role === "Attendee" && <FinishAttendeeRegistrationForm />}
-      {session.user.role === "EventPlanner" && <FinishEpRegistrationForm />}
-      {session.user.role === "Vendor" && <FinishVeRegistrationForm />}
-    </>
+    </div>
   );
 }

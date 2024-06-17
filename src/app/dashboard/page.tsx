@@ -5,6 +5,7 @@ import { authOptions } from "~/server/auth";
 import { UserRole } from "@prisma/client";
 import AttendeeDashboard from "./attendee-dashboard";
 import { redirect } from "next/navigation";
+import AdminTables from "../_admin_tables";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -24,6 +25,7 @@ export default async function DashboardPage() {
         <EventPlannerDashboard />
       )}
       {session.user.role === UserRole["Attendee"] && <AttendeeDashboard />}
+      {session.user.role === UserRole["ADMIN"] && <AdminTables />}
     </>
   );
 }
