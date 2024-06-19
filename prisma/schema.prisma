@@ -29,6 +29,8 @@ model Event {
   acceptedByVenue Boolean @default(false)
   rejectedByVenue Boolean @default(false)
   prefferedPaymentMethod String @default("telebirr")
+  session String[]
+  canceled Boolean @default(false)
 
   vendorInstruction String?
 

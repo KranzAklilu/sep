@@ -1,6 +1,5 @@
 import { deleteAll } from "./deleteAll";
 import { eventSeed } from "./event";
-import { venueSeed } from "./venue";
 import { userSeed } from "./user";
 
 const seed = async () => {

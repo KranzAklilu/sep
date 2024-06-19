@@ -27,8 +27,14 @@ import {
   PopoverContent,
 } from "~/components/ui/popover";
 import { Calendar } from "~/components/ui/calendar";
-import { format } from "date-fns";
-import { CalendarIcon, Check, ChevronsUpDown, InfoIcon } from "lucide-react";
+import { add, format } from "date-fns";
+import {
+  CalendarIcon,
+  Check,
+  ChevronsUpDown,
+  InfoIcon,
+  XCircleIcon,
+} from "lucide-react";
 import { cn } from "~/lib/utils";
 
 import { ContentState, EditorState, convertToRaw } from "draft-js";
@@ -51,13 +57,36 @@ import {
   CommandItem,
 } from "./ui/command";
 import Link from "next/link";
+import { Textarea } from "./ui/textarea";
+import { Badge } from "./ui/badge";
 
+const defaultSessionText = `
+Session Title: [Title of the Session]\n
+
+Time:
+- Start Time: [Start Time]           \n
+- End Time: [End Time]               \n
+                                     \n
+Description:                         \n
+[Brief description of what the session will cover]\n
+                                     \n
+Speaker(s):                          \n
+- [Speaker 1 Name]                   \n
+- [Speaker 2 Name]                   \n
+                                     \n
+Location/building no:                \n
+[Location of the Session]            \n
+                                     \n
+Notes:                               \n
+[Any additional notes or information]\n
+`;
 export function CreateEventDialog({
   venues,
 }: {
   venues: { id: string; name: string; location: string }[];
 }) {
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
+  const [currentSession, setCurrentSession] = useState(defaultSessionText);
 
   const [open, setOpen] = useState(false);
   const utils = api.useUtils();
@@ -77,7 +106,8 @@ export function CreateEventDialog({
     defaultValues: {
       name: "",
       date: new Date(),
-      venue: params.get("venue") || "",
+      session: [],
+      venue: params.get("venue") || undefined,
     },
   });
 
@@ -189,7 +219,7 @@ ${form.watch("name")} is more than just an event; it's a community coming togeth
                 name="venue"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Venu</FormLabel>
+                    <FormLabel>Venue</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -278,6 +308,7 @@ ${form.watch("name")} is more than just an event; it's a community coming togeth
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange as any}
+                          fromDate={add(new Date(), { days: 3 })}
                         />
                         <Input
                           type="time"
@@ -359,6 +390,55 @@ ${form.watch("name")} is more than just an event; it's a community coming togeth
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="session"
+                render={({ field }) => (
+                  <FormItem className="col-span-3">
+                    <FormLabel htmlFor="name" className="text-right">
+                      Session
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        rows={18}
+                        value={currentSession}
+                        onChange={(e) => setCurrentSession(e.target.value)}
+                        defaultValue={defaultSessionText}
+                      />
+                    </FormControl>
+                    <div className="space-x-2">
+                      {form.watch("session").map((_, idx) => (
+                        <Badge>
+                          Session {++idx}{" "}
+                          <XCircleIcon
+                            onClick={() => {
+                              form.setValue(
+                                "session",
+                                form
+                                  .watch("session")
+                                  .filter((_, i) => i !== idx),
+                              );
+                            }}
+                          />
+                        </Badge>
+                      ))}
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        form.setValue("session", [
+                          ...form.watch("session"),
+                          currentSession,
+                        ]);
+                        setCurrentSession(defaultSessionText);
+                      }}
+                    >
+                      Add Another
+                    </Button>
                     <FormMessage />
                   </FormItem>
                 )}

@@ -9,7 +9,6 @@ import {
   CardFooter,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { CalendarDateRangePicker } from "~/views/dashboard/date-range-picker";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
 import { db } from "~/server/db";
@@ -22,7 +21,7 @@ const getEvents = async (userId: string) => {
       EventAttendee: {
         some: {
           userId,
-          // approved: true,
+          approved: true,
         },
       },
     },
@@ -61,11 +60,17 @@ export default async function AttendeeDashboard() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                      Total Registered Events
+                      Total Active Events
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{events.length}</div>
+                    <div className="text-2xl font-bold">
+                      {
+                        events.filter(
+                          (a) => a.date.getTime() > new Date().getTime(),
+                        ).length
+                      }
+                    </div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -110,7 +115,10 @@ export default async function AttendeeDashboard() {
                                   {event.EventAttendee.find(
                                     (e) => e.userId === session.user.id,
                                   )?.approved
-                                    ? "Active"
+                                    ? event.date.getTime() <
+                                      new Date().getTime()
+                                      ? "Passed"
+                                      : "Active"
                                     : "Watiing"}
                                 </Badge>
                                 <CardTitle>{event.name}</CardTitle>

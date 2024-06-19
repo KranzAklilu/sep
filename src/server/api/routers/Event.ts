@@ -22,23 +22,6 @@ export const Event = createTRPCRouter({
   arrangePaymentMethod: protectedProcedure.query(async ({ ctx }) => {
     console.log("payment method adjusted");
   }),
-  /* setTimeAndLocation: protectedProcedure
-    .input(
-      z.object({
-        eventId: z.string(),
-        location: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.db.event.update({
-        where: {
-          id: input.eventId,
-        },
-        data: {
-          location: input.location,
-        },
-      });
-    }), */
   selectVenue: protectedProcedure
     .input(
       z.object({

@@ -99,7 +99,7 @@ const EventDetailPage = async ({ params }: { params: any }) => {
 
       {venue.lng && venue.lat && <EventMap lng={venue.lng} lat={venue.lat} />}
       <div>
-        <h2>Other venues</h2>
+        <h2>Other venue</h2>
         <div className="mt-10 flex gap-6 overflow-x-scroll">
           {otherVenues.map((e) => (
             <VenueCard venue={e} />

@@ -6,29 +6,14 @@ import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 const getUsers = async () => {
-  const ep = await db.user.findMany({
-    where: {
-      role: "EventPlanner",
-      approved: null,
-    },
-  });
-  const vo = await db.user.findMany({
-    where: {
-      role: "VenueOwner",
-      approved: null,
-    },
-    include: {
-      Venue: true,
-    },
-  });
   const ve = await db.user.findMany({
     where: {
       role: "Vendor",
-      approved: null,
+      approved: true,
     },
   });
 
-  return { ep, vo, ve };
+  return ve;
 };
 
 export default async function AdminTables() {
@@ -38,22 +23,14 @@ export default async function AdminTables() {
     return redirect("/login");
   }
 
-  const { ep, ve, vo } = await getUsers();
+  const ve = await getUsers();
 
   return (
     <div className="container my-10">
-      <Tabs defaultValue="ep">
+      <Tabs defaultValue="ve">
         <TabsList>
-          <TabsTrigger value="ep">Event planners</TabsTrigger>
-          <TabsTrigger value="vo">Venue Owners</TabsTrigger>
           <TabsTrigger value="ve">Vendors</TabsTrigger>
         </TabsList>
-        <TabsContent value="ep">
-          <VenueOwnerInquiries users={ep} />
-        </TabsContent>
-        <TabsContent value="vo">
-          <VenueOwnerInquiries users={vo} />
-        </TabsContent>{" "}
         <TabsContent value="ve">
           <VenueOwnerInquiries users={ve} />
         </TabsContent>

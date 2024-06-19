@@ -1,11 +1,5 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardDescription,
-} from "~/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
 import { MyEvents } from "~/views/dashboard/my-events";
@@ -18,12 +12,51 @@ const getVenues = async () => {
     select: { id: true, name: true, location: true },
   });
 };
+
+const dashboardd = async (ownerId: string) => {
+  const totaleventcount = await db.event.count({
+    where: {
+      ownerId,
+    },
+  });
+
+  const events = await db.event.findMany({
+    orderBy: { createdAt: "desc" },
+    where: {
+      ownerId,
+    },
+    include: {
+      Venue: true,
+      EventVenue: true,
+      EventAttendee: true,
+    },
+  });
+
+  return {
+    totalRevenue: events.reduce(
+      (prev, curr) => (prev + curr.price) * curr.EventAttendee.length,
+      0,
+    ),
+    totaleventcount,
+    activeCount: events.reduce(
+      (prev, curr) =>
+        prev + (curr.EventVenue.find((ev) => ev.accepted) ? 1 : 0),
+      0,
+    ),
+    totalSalesCount: events.reduce(
+      (prev, curr) => prev + curr.EventAttendee.length,
+      0,
+    ),
+  };
+};
+
 export default async function EventPlannerDashboard() {
   const session = await getServerSession(authOptions);
 
   if (!session) return <>not logged in</>;
 
   const venues = await getVenues();
+  const transaction = await dashboardd(session.user.id);
 
   return (
     <>
@@ -41,7 +74,7 @@ export default async function EventPlannerDashboard() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                      Total Revenue
+                      Total Active Revenue
                     </CardTitle>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -57,10 +90,9 @@ export default async function EventPlannerDashboard() {
                     </svg>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">ETB45,231.89</div>
-                    <p className="text-xs text-muted-foreground">
-                      +20.1% from last month
-                    </p>
+                    <div className="text-2xl font-bold">
+                      ETB {transaction.totalRevenue}
+                    </div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -84,7 +116,9 @@ export default async function EventPlannerDashboard() {
                     </svg>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">+120</div>
+                    <div className="text-2xl font-bold">
+                      {transaction.totaleventcount}
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       +180.1% from last month
                     </p>
@@ -108,10 +142,9 @@ export default async function EventPlannerDashboard() {
                     </svg>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">+12,234</div>
-                    <p className="text-xs text-muted-foreground">
-                      +19% from last month
-                    </p>
+                    <div className="text-2xl font-bold">
+                      {transaction.totalSalesCount}
+                    </div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -133,7 +166,9 @@ export default async function EventPlannerDashboard() {
                     </svg>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">2</div>
+                    <div className="text-2xl font-bold">
+                      {transaction.activeCount}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -145,9 +180,6 @@ export default async function EventPlannerDashboard() {
                   <CardHeader className="flex flex-row justify-between">
                     <div>
                       <CardTitle>My Events</CardTitle>
-                      <CardDescription>
-                        You have around 5 active events
-                      </CardDescription>
                     </div>
                     <span>
                       <CreateEventDialog venues={venues} />

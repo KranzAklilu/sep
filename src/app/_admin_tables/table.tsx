@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { Event, User } from "@prisma/client";
+import { Event, User, Venue } from "@prisma/client";
 import { format } from "date-fns";
 import { Button } from "~/components/ui/button";
 import { approveUser } from "./actions";
@@ -29,10 +29,10 @@ import {
 } from "~/components/ui/dialog";
 import { DialogClose } from "@radix-ui/react-dialog";
 
-export default function FinishVenueOwnerRegistrationForm({
+export default function AdminDashboardTable({
   users: usr,
 }: {
-  users: User[];
+  users: (User & { Venue?: Venue | null })[];
 }) {
   const { toast } = useToast();
   const router = useRouter();
@@ -62,9 +62,9 @@ export default function FinishVenueOwnerRegistrationForm({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[300px]">Event name</TableHead>
+            <TableHead className="w-[300px]">Name</TableHead>
             <TableHead>Phone</TableHead>
-            <TableHead>Document</TableHead>
+            {!usr[0]?.Venue && <TableHead>Document</TableHead>}
             <TableHead>Requested at</TableHead>
             <TableHead className="text-right">Accept</TableHead>
             <TableHead className="text-right">Reject</TableHead>
@@ -81,10 +81,24 @@ export default function FinishVenueOwnerRegistrationForm({
           {usr.map((user) => (
             <TableRow key={user.id}>
               <TableCell className="font-medium">
-                <Link href={`/events/${user.id}`}>{user.name}</Link>
+                <Link
+                  href={
+                    user.Venue
+                      ? `/venues/${user.Venue.id}`
+                      : `/events/${user.id}`
+                  }
+                >
+                  {user.Venue ? user.Venue.name : user.name}
+                </Link>
               </TableCell>
               <TableCell>{user.phone}</TableCell>
-              <TableCell>{user.licenceDocument}</TableCell>
+              {!usr[0]?.Venue && (
+                <TableCell>
+                  <Link target="_blank" href={user.licenceDocument || ""}>
+                    Document
+                  </Link>
+                </TableCell>
+              )}
               <TableCell>{format(user.createdAt, "yyyy-MM-dd")}</TableCell>
               <TableCell className="text-right">
                 <Dialog>

@@ -26,13 +26,17 @@ export function MyEvents() {
             >
               <CardHeader>
                 <Badge className="mb-2 max-w-max" variant="secondary">
-                  {event.EventVenue.find((ev) => ev.eventId === event.id)
-                    ?.accepted
-                    ? "Active"
+                  {event.canceled
+                    ? "Canceled"
                     : event.EventVenue.find((ev) => ev.eventId === event.id)
-                          ?.rejected
-                      ? "Rejected"
-                      : "Waiting"}
+                          ?.accepted
+                      ? event.date.getTime() < new Date().getTime()
+                        ? "Passed"
+                        : "Active"
+                      : event.EventVenue.find((ev) => ev.eventId === event.id)
+                            ?.rejected
+                        ? "Rejected"
+                        : "Waiting"}
                 </Badge>
                 <CardTitle>{event.name}</CardTitle>
               </CardHeader>

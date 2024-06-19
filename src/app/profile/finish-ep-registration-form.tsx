@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "~/components/ui/input";
-import { Button, buttonVariants } from "~/components/ui/button";
+import { Button } from "~/components/ui/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 
@@ -18,11 +18,7 @@ import {
 import { useToast } from "~/components/ui/use-toast";
 import { api } from "~/trpc/react";
 import { venueUpdateSchema as schema } from "~/lib/validation/venue";
-import { Textarea } from "~/components/ui/textarea";
-import { Checkbox } from "~/components/ui/checkbox";
-import { Label } from "~/components/ui/label";
-import { addDays, format, startOfWeek } from "date-fns";
-import Autocomplete, { usePlacesWidget } from "react-google-autocomplete";
+import { usePlacesWidget } from "react-google-autocomplete";
 import { CldUploadButton } from "next-cloudinary";
 import { useState } from "react";
 

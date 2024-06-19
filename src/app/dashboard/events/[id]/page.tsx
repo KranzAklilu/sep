@@ -1,6 +1,5 @@
-import { Search } from "lucide-react";
+import { StarIcon } from "lucide-react";
 import { Metadata } from "next";
-import Logo from "~/components/logo";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -22,6 +21,14 @@ import { ExternalLink, CheckIcon } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { PostponeDialog } from "~/components/postpone-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -32,6 +39,11 @@ const getEvent = async (id: string) => {
   return await db.event.findUnique({
     where: { id },
     include: {
+      Feedback: {
+        include: {
+          Attendee: true,
+        },
+      },
       _count: {
         select: {
           EventAttendee: {
@@ -50,15 +62,6 @@ const getVenues = async () => {
     select: {
       id: true,
       name: true,
-    },
-  });
-};
-
-const getReport = async (id: string) => {
-  return await db.eventAttendee.findMany({
-    where: {
-      eventId: id,
-      approved: true,
     },
   });
 };
@@ -125,6 +128,25 @@ export default async function DashboardPage({ params }: { params: any }) {
     });
     redirect("/dashboard");
   }
+  async function cancel(formData: FormData) {
+    "use server";
+
+    const id = formData.get("id") as string;
+
+    console.log(id);
+    if (!id) return;
+
+    await db.event.update({
+      where: {
+        id,
+      },
+      data: {
+        canceled: true,
+      },
+    });
+    redirect("/dashboard");
+  }
+  console.log({ event: JSON.stringify(event) });
 
   return (
     <div className="flex flex-col">
@@ -133,8 +155,14 @@ export default async function DashboardPage({ params }: { params: any }) {
           <h2 className="text-3xl font-bold tracking-tight">{event.name}</h2>
           <div className="flex items-center space-x-2">
             <EditEventDialog event={event} venues={venues} />
+
             <PostponeDialog event={event} />
-            <Button variant="destructive">Cancel</Button>
+            <form action={cancel}>
+              <input type="hidden" name="id" value={event.id} />
+              <Button type="submit" variant="destructive">
+                Cancel
+              </Button>
+            </form>
           </div>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
@@ -211,10 +239,7 @@ export default async function DashboardPage({ params }: { params: any }) {
           </div>
           <Card className="col-span-3">
             <CardHeader>
-              <CardTitle>Recent Attendee</CardTitle>
-              <CardDescription>
-                Displayed the last 100 attendees
-              </CardDescription>
+              <CardTitle>Attendees</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-8">
@@ -260,6 +285,58 @@ export default async function DashboardPage({ params }: { params: any }) {
                             </Button>
                           </form>
                         )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>{" "}
+          <Card className="col-span-4">
+            <CardHeader>
+              <CardTitle>Comments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-8">
+                {event.Feedback.map((feedback) => {
+                  return (
+                    <div className="flex items-center">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src="/avatars/05.png" alt="Avatar" />
+                        <AvatarFallback>
+                          {feedback.Attendee?.name?.slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="ml-4 space-y-1">
+                        <p className="text-sm font-medium capitalize leading-none">
+                          {feedback.Attendee?.name}
+                        </p>
+                        <p className="flex text-sm text-muted-foreground">
+                          {feedback.rating} <StarIcon className="h-4 w-4" />
+                        </p>
+                      </div>
+                      <div className="ml-auto flex items-center gap-4 font-medium">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="secondary">
+                              Read comment
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>
+                                Feedback from {feedback.Attendee?.name}
+                              </DialogTitle>
+                              <p>
+                                {feedback.comment.split("\n").map((cmt) => (
+                                  <>
+                                    {cmt} <br />
+                                  </>
+                                ))}
+                              </p>
+                            </DialogHeader>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </div>
                   );

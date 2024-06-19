@@ -1,17 +1,12 @@
-import { Search } from "lucide-react";
 import { Metadata } from "next";
-import Logo from "~/components/logo";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
 } from "~/components/ui/card";
-import { UserNav } from "~/components/user-nav";
-import { MainNav } from "~/views/dashboard/main-nav";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
-import Feedback from "~/components/Feedback";
 import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
 import { db } from "~/server/db";
@@ -31,16 +26,13 @@ const getSettings = async (userId: string) => {
   });
 };
 
-export default async function DashboardPage({ params }: { params: any }) {
+export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
   if (!session) return <>not logged in</>;
 
   const settings = await getSettings(session.user.id);
 
-  async function create() {
-    "use server";
-  }
   async function updateSetting(formData: FormData) {
     "use server";
     if (!session || !session.user || !session.user.id) {

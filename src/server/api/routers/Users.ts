@@ -16,6 +16,14 @@ export const Users = createTRPCRouter({
     });
     return client;
   }),
+  getVendors: protectedProcedure.query(async ({ ctx }) => {
+    const client = await ctx.db.user.findMany({
+      where: {
+        role: "Vendor",
+      },
+    });
+    return client;
+  }),
 
   register: publicProcedure
     .input(userRegisterSchema)
@@ -31,11 +39,21 @@ export const Users = createTRPCRouter({
       });
     }),
 
-  update: publicProcedure
+  update: protectedProcedure
     .input(userUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       const { name, address, phone, licenceDocument } = input;
       console.log(ctx.session);
+      if (input.telebirr) {
+        await ctx.db.settings.create({
+          data: {
+            userId: ctx.session?.user.id,
+            telebirrAccount: input.telebirr,
+            cbeAccount: input.cbe,
+            boaAccount: input.boa,
+          },
+        });
+      }
       return await ctx.db.user.update({
         where: {
           id: ctx.session?.user.id,

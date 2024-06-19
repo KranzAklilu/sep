@@ -66,37 +66,14 @@ export default async function LandingPage() {
           system and join us for building a good community.
         </p>
         <div className="flex justify-center space-x-4">
-          <Button className="">Check out events</Button>
-          <Button className="" variant="secondary">
-            About us
-          </Button>
+          <Link href="/events">
+            <Button className="">Check out events</Button>
+          </Link>
         </div>
       </header>
       <section className="py-10">
         <h3 className="mb-6 text-center text-3xl font-bold">Upcoming Events</h3>
-        <div className="mb-6 flex justify-center space-x-2">
-          <Button className="border-gray-300 text-gray-600" variant="outline">
-            All Events
-          </Button>
-          <Button className="border-gray-300 text-gray-600" variant="outline">
-            Corporate Events
-          </Button>
-          <Button className="border-gray-300 text-gray-600" variant="outline">
-            Private Events
-          </Button>
-          <Button className="border-gray-300 text-gray-600" variant="outline">
-            Charity Events
-          </Button>
-          <Button className="border-gray-300 text-gray-600" variant="outline">
-            Festival Events
-          </Button>
-          <Button className="border-gray-300 text-gray-600" variant="outline">
-            Sports Events
-          </Button>
-          <Button className="border-gray-300 text-gray-600" variant="outline">
-            Concert Events
-          </Button>
-        </div>
+
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {upcommingEvents.map((event, idx) => (
             <EventCard

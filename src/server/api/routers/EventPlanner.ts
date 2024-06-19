@@ -14,6 +14,16 @@ export const EventPlanner = createTRPCRouter({
   getMany: publicProcedure.query(async ({ ctx }) => {
     return await ctx.db.event.findMany({
       orderBy: { createdAt: "desc" },
+      where: {
+        date: {
+          gt: new Date(),
+        },
+        EventVenue: {
+          some: {
+            accepted: true,
+          },
+        },
+      },
       include: {
         Venue: true,
         EventVenue: true,
@@ -39,6 +49,7 @@ export const EventPlanner = createTRPCRouter({
         data: {
           ...data,
           ownerId: ctx.session.user.id,
+          description: data.description || "",
           venueId: venue,
         },
       });

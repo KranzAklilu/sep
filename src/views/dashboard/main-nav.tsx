@@ -37,6 +37,16 @@ const links = [
     roles: [UserRole.Attendee, UserRole.EventPlanner],
   },
   {
+    href: "/events",
+    label: "Events",
+    roles: [UserRole.Attendee],
+  },
+  {
+    href: "/vendors",
+    label: "Vendors",
+    roles: [UserRole.EventPlanner],
+  },
+  {
     href: "/venues",
     label: "Venues",
     roles: [UserRole.EventPlanner],

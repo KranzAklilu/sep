@@ -26,7 +26,7 @@ export default function Page() {
             email: credParsed.email,
             password: credParsed.password,
           });
-          router.refresh();
+          // router.refresh();
           router.push("/dashboard");
         }}
       >

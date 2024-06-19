@@ -6,7 +6,7 @@ import {
   CardFooter,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { format } from "date-fns";
+import { add, format } from "date-fns";
 import { db } from "~/server/db";
 import { notFound } from "next/navigation";
 import { Button } from "~/components/ui/button";
@@ -25,6 +25,8 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import QRCode from "react-qr-code";
+import { Input } from "~/components/ui/input";
+import GiveFeedback from "./givefeedback";
 
 const getEvent = async function (id: string) {
   return await db.event.findFirst({
@@ -37,6 +39,7 @@ const getEvent = async function (id: string) {
         select: {
           userId: true,
           approved: true,
+          paymentProof: true,
         },
       },
       Owner: {
@@ -104,29 +107,44 @@ const EventDetailPage = async ({ params }: { params: any }) => {
                 ({ userId, approved }) =>
                   userId === session.user.id && approved,
               ) ? (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline">Show QRcode</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Your unique qr code</DialogTitle>
-                      <DialogDescription>
-                        Scan this for approval
-                      </DialogDescription>
-                    </DialogHeader>
-                    <QRCode
-                      size={256}
-                      style={{
-                        height: "auto",
-                        maxWidth: "100%",
-                        width: "100%",
-                      }}
-                      value={event.id + ";"}
-                      viewBox={`0 0 256 256`}
+                <div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline">Show QRcode</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Your unique qr code</DialogTitle>
+                        <DialogDescription>
+                          Scan this for approval
+                        </DialogDescription>
+                      </DialogHeader>
+                      <QRCode
+                        size={256}
+                        style={{
+                          height: "auto",
+                          maxWidth: "100%",
+                          width: "100%",
+                        }}
+                        value={
+                          event.id +
+                          ";" +
+                          event.EventAttendee.find(
+                            ({ userId, approved }) =>
+                              userId === session.user.id,
+                          )?.paymentProof
+                        }
+                        viewBox={`0 0 256 256`}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                  {event.date.getTime() < new Date().getTime() && (
+                    <GiveFeedback
+                      eventId={event.id}
+                      feedbackQuestions={event.feedbackQuestions}
                     />
-                  </DialogContent>
-                </Dialog>
+                  )}
+                </div>
               ) : (
                 <Badge variant="secondary">Waiting for approval</Badge>
               )
@@ -145,6 +163,20 @@ const EventDetailPage = async ({ params }: { params: any }) => {
         <CardContent>
           <Badge className="mb-8">ETB {event.price}</Badge>
           <h4>Descriptions</h4>
+          <div>
+            {event.session.map((s, i) => (
+              <div>
+                <h3>Session {++i}</h3>
+                <p className="text-gray-600">
+                  {s.split("\n").map((ses) => (
+                    <>
+                      {ses} <br />
+                    </>
+                  ))}
+                </p>
+              </div>
+            ))}
+          </div>
           <div
             className="text-gray-600"
             dangerouslySetInnerHTML={{ __html: event.description }}

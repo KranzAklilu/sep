@@ -38,7 +38,10 @@ const RegisterAttendeeDialog = ({
         router.push("/dashboard");
       },
       onError: (err) => {
-        toast({ title: "unexpected error has occured" });
+        toast({
+          title: "unexpected error has occured",
+          description: err.message,
+        });
         console.log(err);
       },
     });

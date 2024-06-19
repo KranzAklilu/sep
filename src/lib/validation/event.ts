@@ -10,8 +10,9 @@ export const eventOrderSchema = z.object({
   endTime: z.string(),
   attendeeLimit: z.coerce.number(),
   price: z.coerce.number(),
-  description: z.string(),
+  description: z.string().optional(),
   tag: z.number().optional(),
+  session: z.array(z.string()),
 });
 
 export const eventEditSchema = eventOrderSchema.omit({ venue: true });

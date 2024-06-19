@@ -27,21 +27,21 @@ export default withAuth(
     const tokenWithUser = token as Session["user"];
 
     console.log({ token });
-
-    if (
-      !tokenWithUser.finishedRegistration &&
-      !req.nextUrl.pathname.startsWith("/finish-registration")
-    ) {
-      return NextResponse.redirect(new URL("/finish-registration", req.url));
-    }
+    //
+    // if (
+    //   !tokenWithUser.finishedRegistration &&
+    //   !req.nextUrl.pathname.startsWith("/finish-registration")
+    // ) {
+    //   return NextResponse.redirect(new URL("/finish-registration", req.url));
+    // }
 
     if (tokenWithUser.role !== "ADMIN" && !tokenWithUser.approved) {
-      if (
-        tokenWithUser.approved === null &&
-        !req.nextUrl.pathname.startsWith("/under-review")
-      ) {
-        return NextResponse.redirect(new URL("/under-review", req.url));
-      }
+      // if (
+      //   tokenWithUser.approved === null &&
+      //   !req.nextUrl.pathname.startsWith("/under-review")
+      // ) {
+      //   return NextResponse.redirect(new URL("/under-review", req.url));
+      // }
       if (
         tokenWithUser.approved === false &&
         !req.nextUrl.pathname.startsWith("/rejected")
@@ -49,12 +49,12 @@ export default withAuth(
         return NextResponse.redirect(new URL("/rejected", req.url));
       }
     }
-    if (
-      tokenWithUser.finishedRegistration &&
-      req.nextUrl.pathname.startsWith("/finish-registration")
-    ) {
-      return NextResponse.redirect(new URL("/dashboard/inquires", req.url));
-    }
+    // if (
+    //   tokenWithUser.finishedRegistration &&
+    //   req.nextUrl.pathname.startsWith("/finish-registration")
+    // ) {
+    //   return NextResponse.redirect(new URL("/dashboard/inquires", req.url));
+    // }
   },
 
   {

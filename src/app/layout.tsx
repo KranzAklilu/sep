@@ -8,6 +8,10 @@ import Navbar from "~/components/navbar";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
 import { MainNav } from "~/views/dashboard/main-nav";
+import { db } from "~/server/db";
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import Redirection from "./redirection";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,11 +30,22 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
+  const pathname = headers().get("next-url") as string;
+
+  const dbUser = await db.user.findFirst({
+    where: { id: session?.user.id },
+    include: {
+      Setting: true,
+      Venue: true,
+    },
+  });
+
   return (
     <html lang="en">
       <body className={`font-sans ${inter.variable}`}>
         <TRPCReactProvider>
           <ClientProvider>
+            <Redirection dbUser={dbUser} />
             {!session?.user ? <Navbar /> : <MainNav session={session} />}
             {children}
           </ClientProvider>

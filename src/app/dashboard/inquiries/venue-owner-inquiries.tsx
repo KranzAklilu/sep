@@ -42,17 +42,6 @@ export default function FinishVenueOwnerRegistrationForm({
       console.log(err);
     },
   });
-
-  const { mutateAsync: reject } = api.venue.reject.useMutation({
-    onSuccess: () => {
-      toast({ title: "Event rejected!" });
-    },
-    onError: (err) => {
-      toast({ title: "unexpected error has occured" });
-      console.log(err);
-    },
-  });
-
   return (
     <div>
       <Table>

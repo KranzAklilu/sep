@@ -20,6 +20,22 @@ export const Attendee = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const ev = await ctx.db.event.findUnique({
+        where: {
+          id: input.eventId,
+        },
+      });
+      if (!ev) {
+        throw new Error("no event");
+      }
+      const ea = await ctx.db.eventAttendee.count({
+        where: {
+          eventId: input.eventId,
+        },
+      });
+      if (ev?.attendeeLimit <= ea) {
+        throw new Error("Attendee limmit reached. Good luck nextime");
+      }
       return await ctx.db.eventAttendee.create({
         data: {
           eventId: input.eventId,
@@ -41,6 +57,7 @@ export const Attendee = createTRPCRouter({
       await ctx.db.feedback.create({
         data: {
           rating: input.rating,
+          attendeeId: ctx.session.user.id,
           eventId: input.eventId,
           comment: input.comment,
         },

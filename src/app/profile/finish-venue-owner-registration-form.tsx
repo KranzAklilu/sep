@@ -237,7 +237,7 @@ export default function FinishVenueOwnerRegistrationForm({
                             }}
                             checked={form
                               .watch("availableDate")
-                              .includes(index)}
+                              ?.includes(index)}
                           />
                           <Label htmlFor={`daysOfWeek[${index}]`}>
                             {format(

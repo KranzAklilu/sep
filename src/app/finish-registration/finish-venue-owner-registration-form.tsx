@@ -38,15 +38,15 @@ export default function FinishVenueOwnerRegistrationForm() {
   });
   const { mutateAsync, isLoading } = api.venue.create.useMutation({
     onSuccess: async () => {
-      toast({ title: "Registered successfully" });
-      const cred = localStorage.getItem("cert");
-      if (!cred) return;
-      const credParsed = JSON.parse(cred);
-
-      await signIn("credentials", {
-        email: credParsed.email,
-        password: credParsed.password,
-      });
+      toast({ title: "Registered successfully, please wait for approval" });
+      // const cred = localStorage.getItem("cert");
+      // if (!cred) return;
+      // const credParsed = JSON.parse(cred);
+      //
+      // await signIn("credentials", {
+      //   email: credParsed.email,
+      //   password: credParsed.password,
+      // });
       router.push("/dashboard/inquiries");
     },
     onError: (err) => {
@@ -97,7 +97,7 @@ export default function FinishVenueOwnerRegistrationForm() {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            />{" "}
             <FormField
               control={form.control}
               name="description"
@@ -105,7 +105,7 @@ export default function FinishVenueOwnerRegistrationForm() {
                 <FormItem className="space-y-2">
                   <FormLabel htmlFor="password">Description</FormLabel>
                   <FormControl>
-                    <Textarea disabled={isLoading} {...field} />
+                    <Textarea required disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -119,6 +119,7 @@ export default function FinishVenueOwnerRegistrationForm() {
                   <FormLabel htmlFor="password">Location</FormLabel>
                   <FormControl>
                     <Input
+                      required
                       disabled={isLoading}
                       ref={ref as any}
                       onChange={(event) => {
@@ -137,7 +138,7 @@ export default function FinishVenueOwnerRegistrationForm() {
                 <FormItem className="space-y-2">
                   <FormLabel htmlFor="password">phone</FormLabel>
                   <FormControl>
-                    <Input disabled={isLoading} {...field} />
+                    <Input disabled={isLoading} {...field} required />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -150,7 +151,12 @@ export default function FinishVenueOwnerRegistrationForm() {
                 <FormItem className="space-y-2">
                   <FormLabel htmlFor="password">capacity</FormLabel>
                   <FormControl>
-                    <Input type="number" disabled={isLoading} {...field} />
+                    <Input
+                      type="number"
+                      disabled={isLoading}
+                      {...field}
+                      required
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -163,7 +169,12 @@ export default function FinishVenueOwnerRegistrationForm() {
                 <FormItem className="space-y-2">
                   <FormLabel htmlFor="password">pricePerHour</FormLabel>
                   <FormControl>
-                    <Input type="number" disabled={isLoading} {...field} />
+                    <Input
+                      type="number"
+                      disabled={isLoading}
+                      {...field}
+                      required
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
