@@ -1,83 +1,36 @@
 import { z } from "zod";
-import { venueCreateSchema, venueUpdateSchema } from "~/lib/validation/venue";
-
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { venueCreateSchema, venueUpdateSchema } from "~/lib/validation/venue";
+import { VenueController } from "~/controller/Venue";
+
+const venueController = new VenueController();
 
 export const Venue = createTRPCRouter({
-  getList: protectedProcedure.query(async ({ ctx }) => {
-    return await ctx.db.venue.findMany();
+  getList: protectedProcedure.query(async () => {
+    return await venueController.getList();
   }),
-  searchVenue: protectedProcedure
-    .input(z.string())
-    .query(async ({ ctx, input }) => {
-      return await ctx.db.venue.findFirst({
-        where: {
-          name: {
-            startsWith: input,
-          },
-        },
-      });
-    }),
+  searchVenue: protectedProcedure.input(z.string()).query(async ({ input }) => {
+    return await venueController.searchVenue(input);
+  }),
   checkCapacity: protectedProcedure
     .input(z.string())
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.db.venue.findFirst({
-        where: { id: input },
-        select: {
-          capacity: true,
-        },
-      });
+    .mutation(async ({ input }) => {
+      return await venueController.checkCapacity(input);
     }),
   create: protectedProcedure
     .input(venueCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.venue.create({
-        data: {
-          ...input,
-          ownerId: ctx.session.user.id,
-        },
-      });
+      return await venueController.create(input, ctx.session.user.id);
     }),
   update: protectedProcedure
     .input(venueUpdateSchema)
-    .mutation(async ({ ctx, input: { username, ...input } }) => {
-      await ctx.db.user.update({
-        where: { id: ctx.session.user.id },
-        data: {
-          name: username,
-        },
-      });
-      return await ctx.db.venue.update({
-        where: {
-          ownerId: ctx.session.user.id,
-        },
-        data: {
-          ...input,
-        },
-      });
-    }),
-  accept: protectedProcedure
-    .input(z.string())
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.eventVenue.update({
-        where: {
-          id: input,
-        },
-        data: {
-          accepted: true,
-        },
-      });
+      return await venueController.update(input, ctx.session.user.id);
     }),
-  reject: protectedProcedure
-    .input(z.string())
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.db.eventVenue.update({
-        where: {
-          id: input,
-        },
-        data: {
-          rejected: true,
-        },
-      });
-    }),
+  accept: protectedProcedure.input(z.string()).mutation(async ({ input }) => {
+    return await venueController.accept(input);
+  }),
+  reject: protectedProcedure.input(z.string()).mutation(async ({ input }) => {
+    return await venueController.reject(input);
+  }),
 });

@@ -1,5 +1,7 @@
 import { z } from "zod";
+import { EventController } from "~/controller/Event";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+const eventController = new EventController();
 
 export const Event = createTRPCRouter({
   giveFeedback: protectedProcedure
@@ -10,17 +12,11 @@ export const Event = createTRPCRouter({
         rating: z.number(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      await ctx.db.feedback.create({
-        data: {
-          rating: input.rating,
-          eventId: input.eventId,
-          comment: input.comment,
-        },
-      });
+    .mutation(async ({ input }) => {
+      await eventController.giveFeedback(input);
     }),
-  arrangePaymentMethod: protectedProcedure.query(async ({ ctx }) => {
-    console.log("payment method adjusted");
+  arrangePaymentMethod: protectedProcedure.query(async () => {
+    await eventController.arrangePaymentMethod();
   }),
   selectVenue: protectedProcedure
     .input(
@@ -28,12 +24,8 @@ export const Event = createTRPCRouter({
         id: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      return await ctx.db.venue.findFirst({
-        where: {
-          id: input.id,
-        },
-      });
+    .query(async ({ input }) => {
+      return await eventController.selectVenue(input);
     }),
   setSchedule: protectedProcedure
     .input(
@@ -41,12 +33,8 @@ export const Event = createTRPCRouter({
         id: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      return await ctx.db.venue.findFirst({
-        where: {
-          id: input.id,
-        },
-      });
+    .query(async ({ input }) => {
+      return await eventController.setSchedule(input);
     }),
   monitoryEvents: protectedProcedure
     .input(
@@ -54,12 +42,8 @@ export const Event = createTRPCRouter({
         id: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      return await ctx.db.venue.findFirst({
-        where: {
-          id: input.id,
-        },
-      });
+    .query(async ({ input }) => {
+      return await eventController.monitoryEvents(input);
     }),
   generateReports: protectedProcedure
     .input(
@@ -67,22 +51,8 @@ export const Event = createTRPCRouter({
         id: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      const events = await ctx.db.event.findMany({
-        where: {
-          id: input.id,
-        },
-      });
-
-      let report = {
-        sales: 0,
-        users: 0,
-        feedback: 0,
-      };
-      for (let i = 0; i < events.length; i++) {
-        report.sales++;
-      }
-      return report;
+    .query(async ({ input }) => {
+      return await eventController.generateReports(input);
     }),
   notify: protectedProcedure
     .input(
@@ -90,7 +60,7 @@ export const Event = createTRPCRouter({
         id: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      console.log("send email to the user");
+    .query(async ({ input }) => {
+      await eventController.notify(input);
     }),
 });

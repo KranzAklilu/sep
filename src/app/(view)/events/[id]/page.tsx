@@ -13,7 +13,7 @@ import { Button } from "~/components/ui/button";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
 import Link from "next/link";
-import RegisterAttendeeDialog from "~/views/dashboard/RegisterAttendeeDialog";
+import RegisterAttendeeDialog from "~/components/RegisterAttendeeDialog";
 import EventCard from "~/components/EventCard";
 import EventMap from "./event-map";
 import {

@@ -5,6 +5,7 @@ import { Attendee } from "./routers/Attendee";
 import { Users } from "./routers/Users";
 import { VenueOwner } from "./routers/VenueOwner";
 import { Venue } from "./routers/Venue";
+import { Vendor } from "./routers/Vendor";
 
 /**
  * This is the primary router for your server.
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   event1: Event,
   venueOwner: VenueOwner,
   venue: Venue,
+  vendor: Vendor,
 });
 
 // export type definition of API

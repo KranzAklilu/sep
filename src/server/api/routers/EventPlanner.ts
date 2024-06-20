@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EventPlannerController } from "~/controller/EventPlanner";
 import {
   eventEditSchema,
   eventOrderSchema,
@@ -10,95 +11,37 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 
+const eventPlannerController = new EventPlannerController();
+
 export const EventPlanner = createTRPCRouter({
-  getMany: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.event.findMany({
-      orderBy: { createdAt: "desc" },
-      where: {
-        date: {
-          gt: new Date(),
-        },
-        EventVenue: {
-          some: {
-            accepted: true,
-          },
-        },
-      },
-      include: {
-        Venue: true,
-        EventVenue: true,
-      },
-    });
+  getMany: publicProcedure.query(async () => {
+    return await eventPlannerController.getMany();
   }),
   getMy: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.event.findMany({
-      where: { ownerId: ctx.session?.user.id },
-      orderBy: { createdAt: "desc" },
-      include: {
-        Venue: true,
-        EventVenue: true,
-      },
-    });
+    return await eventPlannerController.getMy(ctx.session?.user.id || "");
   }),
   createEvent: protectedProcedure
     .input(eventOrderSchema)
     .mutation(async ({ ctx, input }) => {
-      const { venue, tag, ...data } = input;
-
-      const ev = await ctx.db.event.create({
-        data: {
-          ...data,
-          ownerId: ctx.session.user.id,
-          description: data.description || "",
-          venueId: venue,
-        },
-      });
-      await ctx.db.eventVenue.create({
-        data: {
-          eventId: ev.id,
-          venueId: venue,
-        },
-      });
-      return ev;
+      return await eventPlannerController.createEvent(
+        input,
+        ctx.session.user.id,
+      );
     }),
   editEvent: protectedProcedure
     .input(eventEditSchema.extend({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { tag, id, ...data } = input;
-      return await ctx.db.event.update({
-        where: {
-          id,
-        },
-        data: {
-          ...data,
-        },
-      });
+    .mutation(async ({ input }) => {
+      return await eventPlannerController.editEvent(input);
     }),
   createFeedbackQuestions: protectedProcedure
     .input(z.object({ id: z.string(), feedbackQuestions: z.array(z.string()) }))
-    .mutation(async ({ ctx, input }) => {
-      const { id, feedbackQuestions } = input;
-      return await ctx.db.event.update({
-        where: {
-          id,
-        },
-        data: {
-          feedbackQuestions,
-        },
-      });
+    .mutation(async ({ input }) => {
+      return await eventPlannerController.createFeedbackQuestions(input);
     }),
   postpone: protectedProcedure
     .input(eventPostponeSchema.extend({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
-      return await ctx.db.event.update({
-        where: {
-          id,
-        },
-        data: {
-          ...data,
-        },
-      });
+    .mutation(async ({ input }) => {
+      return await eventPlannerController.postpone(input);
     }),
   selectVenue: protectedProcedure
     .input(
@@ -106,12 +49,8 @@ export const EventPlanner = createTRPCRouter({
         id: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      return await ctx.db.venue.findFirst({
-        where: {
-          id: input.id,
-        },
-      });
+    .query(async ({ input }) => {
+      return await eventPlannerController.selectVenue(input);
     }),
   setSchedule: protectedProcedure
     .input(
@@ -119,12 +58,8 @@ export const EventPlanner = createTRPCRouter({
         id: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      return await ctx.db.venue.findFirst({
-        where: {
-          id: input.id,
-        },
-      });
+    .query(async ({ input }) => {
+      return await eventPlannerController.setSchedule(input);
     }),
   monitoryEvents: protectedProcedure
     .input(
@@ -132,12 +67,8 @@ export const EventPlanner = createTRPCRouter({
         id: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      return await ctx.db.event.findFirst({
-        where: {
-          id: input.id,
-        },
-      });
+    .query(async ({ input }) => {
+      return await eventPlannerController.monitoryEvents(input);
     }),
   generateReports: protectedProcedure
     .input(
@@ -145,22 +76,8 @@ export const EventPlanner = createTRPCRouter({
         id: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      const events = await ctx.db.event.findMany({
-        where: {
-          id: input.id,
-        },
-      });
-
-      let report = {
-        sales: 0,
-        users: 0,
-        feedback: 0,
-      };
-      for (let i = 0; i < events.length; i++) {
-        report.sales++;
-      }
-      return report;
+    .query(async ({ input }) => {
+      return await eventPlannerController.generateReports(input);
     }),
   notify: protectedProcedure
     .input(
@@ -168,7 +85,7 @@ export const EventPlanner = createTRPCRouter({
         id: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      console.log("send email to the user");
+    .query(async ({ input }) => {
+      return await eventPlannerController.notify(input);
     }),
 });

@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
-import { MyEvents } from "~/views/dashboard/my-events-list";
+import { MyEvents } from "~/components/my-events-list";
 import { db } from "~/server/db";
 import { Input } from "~/components/ui/input";
 

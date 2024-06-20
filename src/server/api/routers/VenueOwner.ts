@@ -1,32 +1,22 @@
 import { z } from "zod";
+import { VenueOwnerController } from "~/controller/VenueOwner";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
+const venueOwnerController = new VenueOwnerController();
+
 export const VenueOwner = createTRPCRouter({
-  searchVenue: protectedProcedure
-    .input(z.string())
-    .query(async ({ ctx, input }) => {
-      return await ctx.db.venue.findFirst({
-        where: {
-          name: {
-            startsWith: input,
-          },
-        },
-      });
-    }),
+  searchVenue: protectedProcedure.input(z.string()).query(async ({ input }) => {
+    return await venueOwnerController.searchVenue(input);
+  }),
   checkCapacity: protectedProcedure
     .input(z.string())
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.db.venue.findFirst({
-        where: { id: input },
-        select: {
-          capacity: true,
-        },
-      });
+    .mutation(async ({ input }) => {
+      return await venueOwnerController.searchVenue(input);
     }),
-  discloseVenueDetail: protectedProcedure.mutation(async ({ ctx, input }) => {
-    return await ctx.db.venue.findFirst({
-      where: { id: input },
-    });
-  }),
+  discloseVenueDetail: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ input }) => {
+      return await venueOwnerController.discloseVenueDetail(input);
+    }),
 });

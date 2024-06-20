@@ -17,7 +17,7 @@ export default function FinishVeRegistrationForm() {
   const [licenceDocumentUrl, setLicenceUrlDocument] = useState("");
   const [phone, setPhone] = useState("");
 
-  const { mutateAsync, isLoading } = api.user.update.useMutation({
+  const { mutateAsync, isLoading } = api.vendor.providesShowcase.useMutation({
     onSuccess: async () => {
       const cred = localStorage.getItem("cert");
       if (!cred) return;

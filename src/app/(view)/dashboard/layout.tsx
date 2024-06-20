@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
-import { MainNav } from "~/views/dashboard/main-nav";
+import { MainNav } from "~/components/main-nav";
 
 export const metadata: Metadata = {
   title: "Dashboard",

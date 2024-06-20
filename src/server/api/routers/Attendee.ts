@@ -1,14 +1,15 @@
 import { z } from "zod";
+import { AttendeeController } from "~/controller/Attendee";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+const attendeeController = new AttendeeController();
 
 export const Attendee = createTRPCRouter({
   exploreEvent: protectedProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
-      return await ctx.db.event.findFirst({
-        where: { id: input },
-      });
+      const event = await attendeeController.exploreEvent(input);
+      return event;
     }),
   registerForAnEvent: protectedProcedure
     .input(
@@ -20,30 +21,8 @@ export const Attendee = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const ev = await ctx.db.event.findUnique({
-        where: {
-          id: input.eventId,
-        },
-      });
-      if (!ev) {
-        throw new Error("no event");
-      }
-      const ea = await ctx.db.eventAttendee.count({
-        where: {
-          eventId: input.eventId,
-        },
-      });
-      if (ev?.attendeeLimit <= ea) {
-        throw new Error("Attendee limmit reached. Good luck nextime");
-      }
-      return await ctx.db.eventAttendee.create({
-        data: {
-          eventId: input.eventId,
-          userId: input.userId,
-          usedPayementMethod: input.usedPaymentMethod,
-          paymentProof: input.paymentProof,
-        },
-      });
+      const attendee = await attendeeController.registerForAnEvent(input);
+      return attendee;
     }),
   giveFeedback: protectedProcedure
     .input(

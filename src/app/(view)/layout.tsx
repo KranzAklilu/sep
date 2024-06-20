@@ -3,11 +3,11 @@ import "~/styles/globals.css";
 import { Inter } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
-import ClientProvider from "~/views/layout/ClientProvider";
+import ClientProvider from "~/components/layout/ClientProvider";
 import Navbar from "~/components/navbar";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
-import { MainNav } from "~/views/dashboard/main-nav";
+import { MainNav } from "~/components/main-nav";
 import { db } from "~/server/db";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";

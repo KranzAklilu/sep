@@ -1,5 +1,5 @@
 import { Input } from "~/components/ui/input";
-import { VenueList } from "~/views/dashboard/venue-list";
+import { VenueList } from "~/components/venue-list";
 
 export default async function EventPlannerDashboard() {
   return (

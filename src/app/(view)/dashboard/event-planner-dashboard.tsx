@@ -2,7 +2,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
-import { MyEvents } from "~/views/dashboard/my-events";
+import { MyEvents } from "~/components/my-events";
 import { CreateEventDialog } from "~/components/create-event-dialog";
 import { db } from "~/server/db";
 import RecentAttendees from "./recent_attendees";
